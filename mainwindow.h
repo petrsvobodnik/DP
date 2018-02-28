@@ -24,22 +24,21 @@ public:
 
 private slots:
     void doFFT();
-    void on_btnConnect_clicked();
-    void on_setFFTLength_clicked();
-    void on_ExitButton_clicked();
-    void on_SampleRateButton_clicked();
-    void on_fftSettingsButton_clicked();
-
+    void on_PBsetFFTLength_clicked();
     void on_PBstartRX_clicked();
     void on_PBstopRX_clicked();
+    void on_PBSampleRate_clicked();
+    void on_PBExit_clicked();
+    void on_PBConnect_clicked();
+    void on_PBfftSettings_clicked();
 
 private:
+    void defineWindow(double[], int );
     Ui::MainWindow *ui;
     bool hackrf_connected;
     double bw;
     freqSetting *freqWindow;
     void plot(double dataY[], double dataX[], int N);
-
 
 public:
     static fftw_complex x[1024];

@@ -75,11 +75,11 @@ void freqSetting::on_PBapply_clicked()
     uint32_t LNAgain = uint32_t (ui->LNAslider->value());
     hackrf_set_lna_gain(sdr, 8*LNAgain);
     qDebug() << "LNA gain set to " << 8*LNAgain << " dB" ;
-    ui->konzole->setText("LNA gain set "+ QString {ui->LNAslider->value()} + " dB");
+    ui->konzole->setText("LNA gain set "+ QString::number(ui->LNAslider->value()) + " dB");
 
     uint32_t VGAgain = uint32_t (ui->VGAslider->value());
     hackrf_set_vga_gain(sdr,2*VGAgain);
-    ui->konzole->append("VGA gain set");
+    ui->konzole->append("VGA gain set" + QString::number(ui->VGAslider->value()) + "dB");
 
     const uint8_t antPow = uint8_t (ui->powerportPB->isChecked());
     hackrf_set_antenna_enable(sdr, antPow);
@@ -87,4 +87,10 @@ void freqSetting::on_PBapply_clicked()
         ui->konzole->append("ant pow enabled");
     else
         ui->konzole->append("ant pow disabled");
+}
+
+void freqSetting::on_PBok_clicked()
+{
+    on_PBapply_clicked();
+    on_PBcancel_clicked();
 }

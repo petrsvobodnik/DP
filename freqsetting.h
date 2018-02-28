@@ -25,8 +25,8 @@ private slots:
 
 
     void on_PBcancel_clicked();
-
     void on_PBapply_clicked();
+    void on_PBok_clicked();
 
 private:
     Ui::freqSetting *ui;
