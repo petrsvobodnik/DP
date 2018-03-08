@@ -23,7 +23,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 LIBS += -lhackrf # tento zkurveny radek se musi vlozit, aby to jelo
-LIBS += /usr/local/lib/libfftw3.a -lfftw3
+LIBS += /usr/local/lib/libfftw3.a -lfftw3f
 
 SOURCES += \
         main.cpp \
@@ -35,7 +35,8 @@ HEADERS += \
         mainwindow.h \
         hackrf.h \
     freqsetting.h \
-    qcustomplot.h
+    qcustomplot.h \
+    main.h
 
 FORMS += \
         mainwindow.ui \

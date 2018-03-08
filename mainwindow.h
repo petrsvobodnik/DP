@@ -32,16 +32,23 @@ private slots:
     void on_PBConnect_clicked();
     void on_PBfftSettings_clicked();
 
+
+    void on_LEfreq_returnPressed();
+
+    void on_PBsetFreq_clicked();
+
+    void on_LEfreq_textChanged(const QString &arg1);
+
 private:
     void defineWindow(double[], int );
     Ui::MainWindow *ui;
     bool hackrf_connected;
     double bw;
     freqSetting *freqWindow;
-    void plot(double dataY[], double dataX[], int N);
+    void plot(double dataY[], double dataX[], int N, int graphID);
 
 public:
-    static fftw_complex x[1024];
+    static fftwf_complex x[1024];
     QTimer guiRefresh;
     //!!! This is bad. this doesn't have to be atomic!!
     static volatile int data_ready;

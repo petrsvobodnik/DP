@@ -145,9 +145,9 @@
     <property name="geometry">
      <rect>
       <x>190</x>
-      <y>19</y>
+      <y>49</y>
       <width>591</width>
-      <height>441</height>
+      <height>411</height>
      </rect>
     </property>
    </widget>
@@ -195,6 +195,52 @@
       <width>81</width>
       <height>25</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="CBfreq">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>10</y>
+      <width>79</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="LEfreq">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>10</y>
+      <width>331</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBsetFreq">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>10</y>
+      <width>80</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Set Freq</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>10</y>
+      <width>31</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>kHz</string>
     </property>
    </widget>
   </widget>

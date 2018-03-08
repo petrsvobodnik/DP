@@ -34,6 +34,9 @@ freqSetting::freqSetting(QWidget *parent) :
     connect(ui->LNAslider, SIGNAL(valueChanged(int)), this, SLOT(slidSpinLNA(int)));
     connect(ui->LNAspinBox, SIGNAL(valueChanged(int)), this, SLOT(spinSlidLNA(int)));
 
+
+    // Nacteni hodnot radia do ovladacich prvku
+
 }
 
 freqSetting::~freqSetting()
@@ -72,6 +75,7 @@ void freqSetting::on_PBcancel_clicked()
 
 void freqSetting::on_PBapply_clicked()
 {
+
     uint32_t LNAgain = uint32_t (ui->LNAslider->value());
     hackrf_set_lna_gain(sdr, 8*LNAgain);
     qDebug() << "LNA gain set to " << 8*LNAgain << " dB" ;
