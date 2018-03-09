@@ -122,6 +122,8 @@ void MainWindow::on_PBConnect_clicked()
             ui->PBsetFreq->setDisabled(false);
         }
 
+        std::cout << "ahoj" << std::endl;
+        radioParams.LNAgain = 16;
         this->hackrf_connected = true;
         MainWindow::data_ready = 0;
     }
@@ -144,9 +146,10 @@ void MainWindow::on_PBExit_clicked()
 
 void MainWindow::on_PBfftSettings_clicked()
 {
-    freqWindow = new freqSetting(this);
+    freqWindow = new freqSetting(this, &radioParams);
     freqWindow->show();
-    freqWindow->setRadio(sdr);
+    freqWindow->setRadio(radioParams.radio);
+
 }
 
 void MainWindow::on_PBstartRX_clicked()
@@ -155,6 +158,7 @@ void MainWindow::on_PBstartRX_clicked()
     hackrf_start_rx(sdr, data_cb, NULL);
 
     guiRefresh.start(500);
+
 }
 
 void MainWindow::on_PBstopRX_clicked()
@@ -289,6 +293,7 @@ void MainWindow::on_LEfreq_returnPressed()
 void MainWindow::on_PBsetFreq_clicked()
 {
    on_LEfreq_returnPressed();
+   std::cout << radioParams.LNAgain << std::endl;
 }
 
 

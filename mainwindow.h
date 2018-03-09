@@ -7,6 +7,7 @@
 #include <fftw3.h>
 #include "freqsetting.h"
 #include "qcustomplot.h"
+#include "main.h"
 
 namespace Ui {
 class MainWindow;
@@ -52,6 +53,7 @@ public:
     QTimer guiRefresh;
     //!!! This is bad. this doesn't have to be atomic!!
     static volatile int data_ready;
+    radio_config radioParams;
 
 
 };

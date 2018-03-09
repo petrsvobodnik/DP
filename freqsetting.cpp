@@ -2,12 +2,15 @@
 #include "ui_freqsetting.h"
 #include "hackrf.h"
 #include "mainwindow.h"
+// #include "main.h"
 #include <QDebug>
 
-freqSetting::freqSetting(QWidget *parent) :
+freqSetting::freqSetting(QWidget *parent, radio_config *radioParams) :
     QDialog(parent),
     ui(new Ui::freqSetting)
 {
+
+    radioParams = radioParams;
     ui->setupUi(this);
 
 
@@ -76,9 +79,9 @@ void freqSetting::on_PBcancel_clicked()
 void freqSetting::on_PBapply_clicked()
 {
 
-    uint32_t LNAgain = uint32_t (ui->LNAslider->value());
-    hackrf_set_lna_gain(sdr, 8*LNAgain);
-    qDebug() << "LNA gain set to " << 8*LNAgain << " dB" ;
+    radioParams->LNAgain = uint32_t (ui->LNAslider->value());
+    hackrf_set_lna_gain(sdr, 8*radioParams->LNAgain);
+    qDebug() << "LNA gain set to " << 8*radioParams->LNAgain << " dB" ;
     ui->konzole->setText("LNA gain set "+ QString::number(ui->LNAslider->value()) + " dB");
 
     uint32_t VGAgain = uint32_t (ui->VGAslider->value());
