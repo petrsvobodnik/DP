@@ -7,12 +7,13 @@
 
 
 freqSetting::freqSetting(QWidget *parent) :
+    // Window constructor
     QDialog(parent),
     ui(new Ui::freqSetting)
 {
     ui->setupUi(this);
 
-
+    // allowing defined values of gains and interconnection of slider and spinbox
     ui->VGAslider->setRange(0, 31);
     ui->VGAslider->setSingleStep(2);
     ui->VGAslider->setTickInterval(10);
@@ -35,10 +36,6 @@ freqSetting::freqSetting(QWidget *parent) :
 
     connect(ui->LNAslider, SIGNAL(valueChanged(int)), this, SLOT(slidSpinLNA(int)));
     connect(ui->LNAspinBox, SIGNAL(valueChanged(int)), this, SLOT(spinSlidLNA(int)));
-
-
-    // Nacteni hodnot radia do ovladacich prvku
-
 }
 
 freqSetting::~freqSetting()
@@ -51,7 +48,7 @@ void freqSetting::setRadio(hackrf_device *id){
 }
 
 
-// Osetreni hodnot zisku
+// treating gain values
 void freqSetting::slidSpinVGA(int gain){
     ui->VGAspinBox->setValue(2*gain);
 }
@@ -77,22 +74,22 @@ void freqSetting::on_PBcancel_clicked()
 
 void freqSetting::on_PBapply_clicked()
 {
+    // setting the values and printing into console
 
     uint32_t LNAgain = uint32_t (ui->LNAslider->value());
     hackrf_set_lna_gain(sdr, 8*LNAgain);
-    qDebug() << "LNA gain set to " << 8*LNAgain << " dB" ;
-    ui->konzole->setText("LNA gain set "+ QString::number(ui->LNAslider->value()) + " dB");
+    ui->console->setText("LNA gain set "+ QString::number(8*ui->LNAslider->value()) + " dB");
 
     uint32_t VGAgain = uint32_t (ui->VGAslider->value());
     hackrf_set_vga_gain(sdr,2*VGAgain);
-    ui->konzole->append("VGA gain set" + QString::number(ui->VGAslider->value()) + "dB");
+    ui->console->append("VGA gain set to: " + QString::number(2*ui->VGAslider->value()) + "dB");
 
     const uint8_t antPow = uint8_t (ui->powerportPB->isChecked());
     hackrf_set_antenna_enable(sdr, antPow);
     if (antPow)
-        ui->konzole->append("ant pow enabled");
+        ui->console->append("ant pow enabled");
     else
-        ui->konzole->append("ant pow disabled");
+        ui->console->append("ant pow disabled");
 }
 
 void freqSetting::on_PBok_clicked()

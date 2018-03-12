@@ -47,6 +47,7 @@ private:
     freqSetting *freqWindow;
     void plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder);
 
+
 public:
     static fftwf_complex x[1024];
     QTimer guiRefresh;

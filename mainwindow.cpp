@@ -9,7 +9,7 @@
 
 int data_cb(hackrf_transfer*);
 const int N = 1024;
-//int *pocetVzorku;
+
 //static fftwf_complex x[N];
 //static fftwf_complex x[1024];
 
@@ -26,10 +26,8 @@ volatile int data_ready = 0;
 #define REAL 0
 #define IMAG 1
 
-// zkusit vykreslit jen okno do grafu soucasne
-// pokoumat nasobeni
 
-// GUI konstruktor
+// GUI constructor
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -42,12 +40,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->labelNoofDevices->setText("HackRF's found: "+QString::number(deviceList->devicecount));
 
+
+    // Definition of CB's text items
     QStringList listRates, listLength, listWindow, listFreqChoice, listSN;
 
-    for (int i =0; i<=deviceList->devicecount-1; i++)
-        listSN << deviceList->serial_numbers[i];
+    for (int i =0; i<=deviceList->devicecount-1; i++){
+        listSN << deviceList->serial_numbers[i]+16;
+    }
     ui->CBhackSN->addItems(listSN);
-
 
     listRates << "2" << "4" << "8" << "10" << "20";
     ui->CBsampleRate->addItems(listRates);
@@ -64,12 +64,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->LEfreq->setText("10000");
     ui->LEfreq->setAlignment(Qt::AlignRight);
 
+
+    // setting buttons to be inactive till Hack is connected
     ui->PBstartRX->setDisabled(true);
     ui->PBstopRX->setDisabled(true);
     ui->PBSampleRate->setDisabled(true);
     ui->PBsetFFTLength->setDisabled(true);
     ui->PBsetFreq->setDisabled(true);
 
+
+    // graph constructors
     ui->fftGraph->addGraph();
     ui->fftGraph->graph(0)->setPen(QPen(Qt::blue));
     ui->fftGraph->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20)));
@@ -78,8 +82,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->addGraph(ui->fftGraph->xAxis, ui->fftGraph->yAxis2);
     ui->fftGraph->graph(1)->setPen(QPen(Qt::red));
     ui->fftGraph->graph(1)->setName("Windowing characteristic");
-//    ui->fftGraph->yAxis2->rescale(true);
+
     ui->fftGraph->xAxis->setRange(0,ui->CBwinLen->currentData().toInt());
+    ui->fftGraph->yAxis->setRange(0,50);
     ui->fftGraph->yAxis2->setRange(0,1);
     ui->fftGraph->yAxis2->setVisible(true);
     ui->fftGraph->legend->setVisible(true);
@@ -87,13 +92,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables| QCP::iRangeDrag);
     ui->fftGraph->axisRect()->setRangeDrag(Qt::Horizontal);
     ui->fftGraph->axisRect()->setRangeZoom(Qt::Horizontal);
-    ui->fftGraph->yAxis->setRange(0,50);
 
+    // Y-axis range changing
     ui->SBupperRange->setValue(ui->fftGraph->yAxis->range().upper);
     ui->SBupperRange->setDisabled(true);
     ui->labelDate->hide();
     ui->labelTime->hide();
 
+    // Preparation for adding another graph
 //    ui->fftGraph->addGraph();
 //    ui->fftGraph->graph(2)->setPen(QPen(Qt::green));
 
@@ -102,10 +108,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(doFFT()));
 }
 
-// GUI destruktor
+// GUI destructor
 MainWindow::~MainWindow()
 {
-//    if(this->hackrf_connected){
+//   Disconnecting from radio
     if(hackrf_connected){
         hackrf_stop_rx(sdr);
         hackrf_close(sdr);
@@ -119,25 +125,29 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_PBConnect_clicked()
 {
+    // loading list of connected devices
     hackrf_device_list_t* deviceList = hackrf_device_list();
     const char *SN = *deviceList->serial_numbers;
 //    char hilfe = ui->CBhackSN->currentData().toChar()
 //    const char *SN = hilfe;
 
     if(!this->hackrf_connected){
-        if(hackrf_open_by_serial(SN, &sdr)!= HACKRF_SUCCESS) // rádio se otevírá podle SN
+        if(hackrf_open_by_serial(SN, &sdr)!= HACKRF_SUCCESS) // radio is being identified by its SN
         {
             QMessageBox::warning(this, "Not connected!", "No HackRF device found");
             puts("Error opening device");
         }
         else{
-            std::cout << "connected to: "<< SN << std::endl;
+            // activation of GUI buttons
+            std::cout << "connected to: "<< SN+16 << std::endl;
             ui->PBstartRX->setDisabled(false);
             ui->PBstopRX->setDisabled(false);
             ui->PBSampleRate->setDisabled(false);
             ui->PBsetFFTLength->setDisabled(false);
             ui->PBsetFreq->setDisabled(false);
             ui->SBupperRange->setDisabled(false);
+            ui->PBConnect->setText("Connected");
+            ui->statusBar->showMessage("Connected");
         }
 
         this->hackrf_connected = true;
@@ -148,13 +158,12 @@ void MainWindow::on_PBConnect_clicked()
 
 void MainWindow::on_PBsetFFTLength_clicked()
 {
-    double delka= ui->CBwinLen->currentText().toInt();
-    std::cout << delka << std::endl;
+    double len= ui->CBwinLen->currentText().toInt();
+    std::cout << len << std::endl;
 
-    int typFiltru = ui->CBwinShape->currentIndex();
-    defineWindow(fftFiltr, typFiltru);
+    int filterType = ui->CBwinShape->currentIndex();
+    defineWindow(fftFiltr, filterType);
 }
-
 
 void MainWindow::on_PBExit_clicked()
 {
@@ -163,6 +172,7 @@ void MainWindow::on_PBExit_clicked()
 
 void MainWindow::on_PBfftSettings_clicked()
 {
+    // Displaying FreqSetting window
     freqWindow = new freqSetting(this);
     freqWindow->show();
     freqWindow->setRadio(sdr);
@@ -170,7 +180,7 @@ void MainWindow::on_PBfftSettings_clicked()
 
 void MainWindow::on_PBstartRX_clicked()
 {
-    // Zahájení příjmu
+    // Start reception
     hackrf_start_rx(sdr, data_cb, NULL);
 
     guiRefresh.start(500);
@@ -178,18 +188,61 @@ void MainWindow::on_PBstartRX_clicked()
 
 void MainWindow::on_PBstopRX_clicked()
 {
+    // End reception
     hackrf_stop_rx(sdr);
     guiRefresh.stop();
 }
 
 void MainWindow::on_PBSampleRate_clicked()
 {
+    // change of sample rate
     bw = ui->CBsampleRate->currentText().toDouble() * 1000000;
-    std::cout << double(bw) << std::endl;
+//    std::cout << double(bw) << std::endl;
     hackrf_set_sample_rate(sdr, bw);
 }
 
+void MainWindow::on_LEfreq_returnPressed()
+{
+    // Set new frequency by pressing Enter
+    const uint64_t frequency= ui->LEfreq->text().toUInt()*1000;
+    hackrf_set_freq(sdr, frequency);
+}
+
+void MainWindow::on_PBsetFreq_clicked()
+{
+   on_LEfreq_returnPressed();
+}
+
+void MainWindow::on_LEfreq_textChanged(const QString &arg1)
+{
+    // Treating frequency out of range values
+//    QPalette LEcolor; // left here only for demonstration of usage
+
+    if ((arg1.toInt()<1000) | (arg1.toInt()>6000000)){
+        ui->LEfreq->setStyleSheet("QLineEdit {background-color: rgb(255, 117, 117);}");
+        ui->PBsetFreq->setDisabled(true);
+        ui->label_5->setText("Frequency has to be in range of 1MHz - 6GHz");
+        ui->label_5->show();
+//        LEcolor.setBrush(QPalette::Base, rgb(255, 117, 117));
+    }
+    else
+    {
+        ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
+        //        LEcolor.setBrush(QPalette::Base, Qt::white);
+        ui->PBsetFreq->setDisabled(false);
+        ui->label_5->hide();
+    }
+
+//    ui->LEfreq->setPalette(LEcolor);
+}
+
+void MainWindow::on_SBupperRange_valueChanged(int arg1)
+{
+    ui->fftGraph->yAxis->setRangeUpper(arg1);
+}
+
 int data_cb(hackrf_transfer* trn){
+    // callback function for data reception from Hack
     if (!MainWindow::data_ready)
     {
         int8_t re, im;
@@ -201,13 +254,12 @@ int data_cb(hackrf_transfer* trn){
             MainWindow::x[i][IMAG] = (double)im; //double((trn->buffer[i*2+1])-128);
         }
         MainWindow::data_ready=1;
-
-//        std::cout << "Buffer length " << trn->buffer_length << std::endl << "Valid lenght " << trn->valid_length << std::endl;
     }
     return 0;
 }
 
 void MainWindow::plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder){
+    // function for plotting data. Input arrays are converted to vectors. Optionally, second half of data is moved to the front to center the tuned frequency
     std::vector<double> x1;
     std::vector<double> y1;
 
@@ -239,7 +291,6 @@ void MainWindow::plot(double dataY[], double dataX[], int N, int graphID, bool s
     return;
 }
 
-
 void MainWindow::doFFT(){
     static int a = 0;
     QString s = QString::number(a);
@@ -249,12 +300,8 @@ void MainWindow::doFFT(){
     while(!MainWindow::data_ready);
 
 //    // FFT window shaping
-//    MainWindow::x[REAL] = MainWindow::x[REAL][]*fftFiltr[1][];
-//    MainWindow::x[IMAG] = MainWindow::x[IMAG]*fftFiltr;
-//    MainWindow::x[][0] *= fftFiltr[];
-
     for (int i=0; i<N; i++){
-        MainWindow::x[i][0] *= fftFiltr[i];  //MainWindow::x
+        MainWindow::x[i][0] *= fftFiltr[i];
         MainWindow::x[i][1] *= fftFiltr[i];
     }
 
@@ -263,9 +310,9 @@ void MainWindow::doFFT(){
     fftwf_execute(plan);
     for (int i=0; i<N; i++){
         spectrum[i] = 10*log10(sqrt(pow(y[i][REAL],2) + pow(y[i][IMAG],2)));
-//        spectrum[i] = (MainWindow::x[i][REAL]);
+//        spectrum[i] = (MainWindow::x[i][REAL]);   // plot data in time domain (real component of the signal)
         samples[i] = i;
-//        spectrum1[i] = (MainWindow::x[i][IMAG]);
+//        spectrum1[i] = (MainWindow::x[i][IMAG]);  // plot data in time domain (imag component of the signal)
     }
 
 
@@ -290,6 +337,7 @@ void MainWindow::doFFT(){
 }
 
 void MainWindow::defineWindow(double fftWindow[], int typ){
+    // calculation of windows
     switch (typ) {
     case 0: // Rectangle
         for (int i=0; i<N; i++)
@@ -310,45 +358,4 @@ void MainWindow::defineWindow(double fftWindow[], int typ){
         break;
     }
 }
-
-void MainWindow::on_LEfreq_returnPressed()
-{
-    const uint64_t frequency= ui->LEfreq->text().toUInt()*1000;
-    hackrf_set_freq(sdr, frequency);
-//    std::cout << "Frequency set: " << frequency <<"MHz" << std::endl;
-}
-
-void MainWindow::on_PBsetFreq_clicked()
-{
-   on_LEfreq_returnPressed();
-}
-
-void MainWindow::on_LEfreq_textChanged(const QString &arg1)
-{
-    QPalette LEcolor;
-
-//    if ((ui->LEfreq->text().toInt()<1000) | (ui->LEfreq->text().toInt()>6000000))
-    if ((arg1.toInt()<1000) | (arg1.toInt()>6000000)){
-        ui->LEfreq->setStyleSheet("QLineEdit {background-color: rgb(255, 117, 117);}");
-        ui->PBsetFreq->setDisabled(true);
-        ui->label_5->setText("Frequency has to be in range of 1MHz - 6GHz");
-        ui->label_5->show();
-//        LEcolor.setBrush(QPalette::Base, rgb(255, 117, 117));
-    }
-    else
-    {
-        ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
-        //        LEcolor.setBrush(QPalette::Base, Qt::white);
-        ui->PBsetFreq->setDisabled(false);
-        ui->label_5->hide();
-    }
-
-//    ui->LEfreq->setPalette(LEcolor);
-}
-
-void MainWindow::on_SBupperRange_valueChanged(int arg1)
-{
-    ui->fftGraph->yAxis->setRangeUpper(arg1);
-}
-
 
