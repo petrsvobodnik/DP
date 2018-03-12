@@ -31,13 +31,13 @@ private slots:
     void on_PBExit_clicked();
     void on_PBConnect_clicked();
     void on_PBfftSettings_clicked();
-
-
-    void on_LEfreq_returnPressed();
-
     void on_PBsetFreq_clicked();
 
+    void on_LEfreq_returnPressed();
     void on_LEfreq_textChanged(const QString &arg1);
+
+    void on_SBupperRange_valueChanged(int arg1);
+
 
 private:
     void defineWindow(double[], int );
@@ -45,7 +45,7 @@ private:
     bool hackrf_connected;
     double bw;
     freqSetting *freqWindow;
-    void plot(double dataY[], double dataX[], int N, int graphID);
+    void plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder);
 
 public:
     static fftwf_complex x[1024];

@@ -4,6 +4,8 @@
 #include "mainwindow.h"
 #include <QDebug>
 
+
+
 freqSetting::freqSetting(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::freqSetting)

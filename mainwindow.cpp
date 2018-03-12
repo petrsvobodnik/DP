@@ -4,6 +4,7 @@
 #include <fftw3.h>
 #include "freqsetting.h"
 #include "qcustomplot.h"
+#include "main.h"
 
 
 int data_cb(hackrf_transfer*);
@@ -17,7 +18,7 @@ fftwf_complex MainWindow::x[N];
 //static fftwf_complex x[N];
 double spectrum [N];
 double spectrum1 [N];
-double vzorky [N];
+double samples [N];
 double fftFiltr [N];
 
 //!!! This is bad. this doesn't have to be atomic!!
@@ -34,13 +35,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     hackrf_init();
+    hackrf_device_list_t* deviceList = hackrf_device_list();
     this->hackrf_connected = false;
 
     ui->setupUi(this);
 
+    ui->labelNoofDevices->setText("HackRF's found: "+QString::number(deviceList->devicecount));
+
+    QStringList listRates, listLength, listWindow, listFreqChoice, listSN;
+
+    for (int i =0; i<=deviceList->devicecount-1; i++)
+        listSN << deviceList->serial_numbers[i];
+    ui->CBhackSN->addItems(listSN);
 
 
-    QStringList listRates, listLength, listWindow, listFreqChoice;
     listRates << "2" << "4" << "8" << "10" << "20";
     ui->CBsampleRate->addItems(listRates);
 
@@ -55,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->LEfreq->setText("10000");
     ui->LEfreq->setAlignment(Qt::AlignRight);
- //    ui->lcdNumber->seu
 
     ui->PBstartRX->setDisabled(true);
     ui->PBstopRX->setDisabled(true);
@@ -80,6 +87,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables| QCP::iRangeDrag);
     ui->fftGraph->axisRect()->setRangeDrag(Qt::Horizontal);
     ui->fftGraph->axisRect()->setRangeZoom(Qt::Horizontal);
+    ui->fftGraph->yAxis->setRange(0,50);
+
+    ui->SBupperRange->setValue(ui->fftGraph->yAxis->range().upper);
+    ui->SBupperRange->setDisabled(true);
+    ui->labelDate->hide();
+    ui->labelTime->hide();
 
 //    ui->fftGraph->addGraph();
 //    ui->fftGraph->graph(2)->setPen(QPen(Qt::green));
@@ -108,11 +121,15 @@ void MainWindow::on_PBConnect_clicked()
 {
     hackrf_device_list_t* deviceList = hackrf_device_list();
     const char *SN = *deviceList->serial_numbers;
-
+//    char hilfe = ui->CBhackSN->currentData().toChar()
+//    const char *SN = hilfe;
 
     if(!this->hackrf_connected){
         if(hackrf_open_by_serial(SN, &sdr)!= HACKRF_SUCCESS) // rádio se otevírá podle SN
+        {
+            QMessageBox::warning(this, "Not connected!", "No HackRF device found");
             puts("Error opening device");
+        }
         else{
             std::cout << "connected to: "<< SN << std::endl;
             ui->PBstartRX->setDisabled(false);
@@ -120,11 +137,13 @@ void MainWindow::on_PBConnect_clicked()
             ui->PBSampleRate->setDisabled(false);
             ui->PBsetFFTLength->setDisabled(false);
             ui->PBsetFreq->setDisabled(false);
+            ui->SBupperRange->setDisabled(false);
         }
 
         this->hackrf_connected = true;
         MainWindow::data_ready = 0;
     }
+
 }
 
 void MainWindow::on_PBsetFFTLength_clicked()
@@ -182,16 +201,28 @@ int data_cb(hackrf_transfer* trn){
             MainWindow::x[i][IMAG] = (double)im; //double((trn->buffer[i*2+1])-128);
         }
         MainWindow::data_ready=1;
+
+//        std::cout << "Buffer length " << trn->buffer_length << std::endl << "Valid lenght " << trn->valid_length << std::endl;
     }
     return 0;
 }
 
-void MainWindow::plot(double dataY[], double dataX[], int N, int graphID){
+void MainWindow::plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder){
     std::vector<double> x1;
     std::vector<double> y1;
 
     y1.assign(dataY, dataY+N);
-    x1.assign(dataX, dataX+N);
+
+
+    if (switchOrder){       // switchOrder serves to push the second half of FFT results to front --> tuned frequency is in the center of plot
+        std::vector<double> x0;
+        x1.assign(dataX+N/2, dataX+N);
+        x0.assign(dataX, dataX+N/2);
+        x1.insert(x1.end(), x0.begin(), x0.end());
+    }
+    else
+        x1.assign(dataX, dataX+N);
+
 
     QVector<double> x = QVector<double>::fromStdVector(x1);
     QVector<double> y = QVector<double>::fromStdVector(y1);
@@ -201,10 +232,8 @@ void MainWindow::plot(double dataY[], double dataX[], int N, int graphID){
     ui->fftGraph->graph(graphID)->setScatterStyle(QCPScatterStyle::ssNone);
     ui->fftGraph->graph(graphID)->setLineStyle(QCPGraph::lsLine);
 
+
     ui->fftGraph->xAxis->rescale();
-    ui->fftGraph->yAxis->setRange(0,50);
-//    ui->fftGraph->yAxis->rescale(true);
-//    ui->graf->yAxis->setScaleType(QCPAxis::stLogarithmic);
     ui->fftGraph->replot();
 //    ui->fftGraph->update();
     return;
@@ -230,21 +259,20 @@ void MainWindow::doFFT(){
     }
 
     // Planning the fft
-    fftwf_plan plan = fftwf_plan_dft_1d(N,MainWindow::x,y,FFTW_FORWARD,FFTW_ESTIMATE);  // MainWindow::x
+    fftwf_plan plan = fftwf_plan_dft_1d(N,MainWindow::x,y,FFTW_FORWARD,FFTW_ESTIMATE);
     fftwf_execute(plan);
     for (int i=0; i<N; i++){
         spectrum[i] = 10*log10(sqrt(pow(y[i][REAL],2) + pow(y[i][IMAG],2)));
 //        spectrum[i] = (MainWindow::x[i][REAL]);
-        vzorky[i] = i;
+        samples[i] = i;
 //        spectrum1[i] = (MainWindow::x[i][IMAG]);
     }
 
 
-// // Vykreslovani grafu
-    plot(fftFiltr, vzorky, N, 1);
-    plot(spectrum, vzorky, N, 0);
-//    plot(spectrum1, vzorky, N, 2);
-
+// // plotting graphs
+    plot(fftFiltr, samples, N, 1, false);
+    plot(spectrum, samples, N, 0, true);
+//    plot(spectrum1, samples, N, 2);
 
 //    //cleaning
 //    fftwf_destroy_plan(plan);
@@ -255,6 +283,10 @@ void MainWindow::doFFT(){
     a++;
     s.asprintf("%d",a);
     ui->label_2->setText(s);
+    ui->labelTime->setText("Current time: "+QDateTime::currentDateTime().toString("hh:mm:ss")); //dd.MM.yy"));
+    ui->labelTime->show();
+    ui->labelDate->setText("Current date: "+QDateTime::currentDateTime().toString("dd.MM.yy"));
+    ui->labelDate->show();
 }
 
 void MainWindow::defineWindow(double fftWindow[], int typ){
@@ -291,20 +323,32 @@ void MainWindow::on_PBsetFreq_clicked()
    on_LEfreq_returnPressed();
 }
 
-
-
-
 void MainWindow::on_LEfreq_textChanged(const QString &arg1)
 {
     QPalette LEcolor;
 
 //    if ((ui->LEfreq->text().toInt()<1000) | (ui->LEfreq->text().toInt()>6000000))
-    if ((arg1.toInt()<1000) | (arg1.toInt()>6000000))
+    if ((arg1.toInt()<1000) | (arg1.toInt()>6000000)){
         ui->LEfreq->setStyleSheet("QLineEdit {background-color: rgb(255, 117, 117);}");
+        ui->PBsetFreq->setDisabled(true);
+        ui->label_5->setText("Frequency has to be in range of 1MHz - 6GHz");
+        ui->label_5->show();
 //        LEcolor.setBrush(QPalette::Base, rgb(255, 117, 117));
+    }
     else
+    {
         ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
-//        LEcolor.setBrush(QPalette::Base, Qt::white);
+        //        LEcolor.setBrush(QPalette::Base, Qt::white);
+        ui->PBsetFreq->setDisabled(false);
+        ui->label_5->hide();
+    }
 
 //    ui->LEfreq->setPalette(LEcolor);
 }
+
+void MainWindow::on_SBupperRange_valueChanged(int arg1)
+{
+    ui->fftGraph->yAxis->setRangeUpper(arg1);
+}
+
+
