@@ -121,7 +121,7 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QCheckBox" name="powerportPB">
+  <widget class="QCheckBox" name="CheckBantPow">
    <property name="geometry">
     <rect>
      <x>10</x>

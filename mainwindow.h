@@ -8,6 +8,23 @@
 #include "freqsetting.h"
 #include "qcustomplot.h"
 
+#define MHz 1000000
+#define GHz 1000000000
+
+struct radio_config
+{
+    hackrf_device *radioID;
+    uint32_t LNAgain = 0;
+    uint32_t VGAgain = 0;
+    uint8_t antPower = false;
+    uint64_t rxFreq = 20*MHz;
+    double sampleRate = 10*MHz;
+    int fftlen = 1024;
+    int filterShape;
+    bool hackrf_connected = false;
+} ;
+
+
 namespace Ui {
 class MainWindow;
 }
@@ -38,6 +55,8 @@ private slots:
 
     void on_SBupperRange_valueChanged(int arg1);
 
+
+    void on_PBsetWinShape_clicked();
 
 private:
     void defineWindow(double[], int );

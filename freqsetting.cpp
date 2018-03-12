@@ -4,7 +4,7 @@
 #include "mainwindow.h"
 #include <QDebug>
 
-
+extern radio_config hackConfig;
 
 freqSetting::freqSetting(QWidget *parent) :
     // Window constructor
@@ -36,6 +36,17 @@ freqSetting::freqSetting(QWidget *parent) :
 
     connect(ui->LNAslider, SIGNAL(valueChanged(int)), this, SLOT(slidSpinLNA(int)));
     connect(ui->LNAspinBox, SIGNAL(valueChanged(int)), this, SLOT(spinSlidLNA(int)));
+
+
+    // Deactivate buttons when Hack is not connected
+    ui->PBapply->setDisabled(!hackConfig.hackrf_connected);
+    ui->PBok->setDisabled(!hackConfig.hackrf_connected);
+
+
+    // Load current values
+    ui->LNAslider->setValue(hackConfig.LNAgain/8);
+    ui->VGAslider->setValue(hackConfig.VGAgain/2);
+    ui->CheckBantPow->setChecked(hackConfig.antPower);
 }
 
 freqSetting::~freqSetting()
@@ -76,17 +87,20 @@ void freqSetting::on_PBapply_clicked()
 {
     // setting the values and printing into console
 
-    uint32_t LNAgain = uint32_t (ui->LNAslider->value());
-    hackrf_set_lna_gain(sdr, 8*LNAgain);
-    ui->console->setText("LNA gain set "+ QString::number(8*ui->LNAslider->value()) + " dB");
+//    uint32_t LNAgain = 8* uint32_t (ui->LNAslider->value());
+    hackConfig.LNAgain = 8* uint32_t (ui->LNAslider->value());
+    hackrf_set_lna_gain(sdr, hackConfig.LNAgain);
+    ui->console->setText("LNA gain set "+ QString::number(hackConfig.LNAgain) + " dB");
 
-    uint32_t VGAgain = uint32_t (ui->VGAslider->value());
-    hackrf_set_vga_gain(sdr,2*VGAgain);
-    ui->console->append("VGA gain set to: " + QString::number(2*ui->VGAslider->value()) + "dB");
+//    uint32_t VGAgain = 2*uint32_t (ui->VGAslider->value());
+    hackConfig.VGAgain = 2*uint32_t (ui->VGAslider->value());
+    hackrf_set_vga_gain(sdr,hackConfig.VGAgain);
+    ui->console->append("VGA gain set to: " + QString::number(hackConfig.VGAgain) + "dB");
 
-    const uint8_t antPow = uint8_t (ui->powerportPB->isChecked());
-    hackrf_set_antenna_enable(sdr, antPow);
-    if (antPow)
+//    const uint8_t antPow = uint8_t (ui->powerportPB->isChecked());
+    hackConfig.antPower = uint8_t (ui->CheckBantPow->isChecked());
+    hackrf_set_antenna_enable(sdr, hackConfig.antPower);
+    if (hackConfig.antPower)
         ui->console->append("ant pow enabled");
     else
         ui->console->append("ant pow disabled");

@@ -6,6 +6,7 @@
 #include "qcustomplot.h"
 #include "main.h"
 
+radio_config hackConfig;
 
 int data_cb(hackrf_transfer*);
 const int N = 1024;
@@ -20,6 +21,7 @@ double spectrum [N];
 double spectrum1 [N];
 double samples [N];
 double fftFiltr [N];
+//radio_config MainWindow::hackConfig;
 
 //!!! This is bad. this doesn't have to be atomic!!
 volatile int data_ready = 0;
@@ -34,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     hackrf_init();
     hackrf_device_list_t* deviceList = hackrf_device_list();
-    this->hackrf_connected = false;
+    hackConfig.hackrf_connected = false;
 
     ui->setupUi(this);
 
@@ -112,7 +114,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
 //   Disconnecting from radio
-    if(hackrf_connected){
+    if(hackConfig.hackrf_connected){
         hackrf_stop_rx(sdr);
         hackrf_close(sdr);
         puts("Disconnected");
@@ -131,7 +133,7 @@ void MainWindow::on_PBConnect_clicked()
 //    char hilfe = ui->CBhackSN->currentData().toChar()
 //    const char *SN = hilfe;
 
-    if(!this->hackrf_connected){
+    if(!hackConfig.hackrf_connected){
         if(hackrf_open_by_serial(SN, &sdr)!= HACKRF_SUCCESS) // radio is being identified by its SN
         {
             QMessageBox::warning(this, "Not connected!", "No HackRF device found");
@@ -139,6 +141,7 @@ void MainWindow::on_PBConnect_clicked()
         }
         else{
             // activation of GUI buttons
+            hackConfig.radioID = sdr;
             std::cout << "connected to: "<< SN+16 << std::endl;
             ui->PBstartRX->setDisabled(false);
             ui->PBstopRX->setDisabled(false);
@@ -150,19 +153,15 @@ void MainWindow::on_PBConnect_clicked()
             ui->statusBar->showMessage("Connected");
         }
 
-        this->hackrf_connected = true;
+        hackConfig.hackrf_connected = true;
         MainWindow::data_ready = 0;
     }
-
 }
 
 void MainWindow::on_PBsetFFTLength_clicked()
 {
     double len= ui->CBwinLen->currentText().toInt();
-    std::cout << len << std::endl;
-
-    int filterType = ui->CBwinShape->currentIndex();
-    defineWindow(fftFiltr, filterType);
+    hackConfig.fftlen = len;
 }
 
 void MainWindow::on_PBExit_clicked()
@@ -181,31 +180,35 @@ void MainWindow::on_PBfftSettings_clicked()
 void MainWindow::on_PBstartRX_clicked()
 {
     // Start reception
-    hackrf_start_rx(sdr, data_cb, NULL);
-
+//    hackrf_start_rx(sdr, data_cb, NULL);
+    hackrf_start_rx(hackConfig.radioID, data_cb, NULL);
     guiRefresh.start(500);
 }
 
 void MainWindow::on_PBstopRX_clicked()
 {
     // End reception
-    hackrf_stop_rx(sdr);
+//    hackrf_stop_rx(sdr);
+    hackrf_stop_rx(hackConfig.radioID);
     guiRefresh.stop();
 }
 
 void MainWindow::on_PBSampleRate_clicked()
 {
     // change of sample rate
-    bw = ui->CBsampleRate->currentText().toDouble() * 1000000;
-//    std::cout << double(bw) << std::endl;
-    hackrf_set_sample_rate(sdr, bw);
+//    bw = ui->CBsampleRate->currentText().toDouble() * 1000000;
+    hackConfig.sampleRate = ui->CBsampleRate->currentText().toDouble() * 1000000;
+
+    hackrf_set_sample_rate(sdr, hackConfig.sampleRate);
 }
 
 void MainWindow::on_LEfreq_returnPressed()
 {
     // Set new frequency by pressing Enter
-    const uint64_t frequency= ui->LEfreq->text().toUInt()*1000;
-    hackrf_set_freq(sdr, frequency);
+//    const uint64_t frequency= ui->LEfreq->text().toUInt()*1000;
+//    hackrf_set_freq(sdr, frequency);
+    hackConfig.rxFreq = ui->LEfreq->text().toUInt()*1000;
+    hackrf_set_freq(sdr, hackConfig.rxFreq);
 }
 
 void MainWindow::on_PBsetFreq_clicked()
@@ -359,3 +362,10 @@ void MainWindow::defineWindow(double fftWindow[], int typ){
     }
 }
 
+
+void MainWindow::on_PBsetWinShape_clicked()
+{
+    //    int filterType = ui->CBwinShape->currentIndex();
+    hackConfig.filterShape = ui->CBwinShape->currentIndex();
+    defineWindow(fftFiltr, hackConfig.filterShape);
+}

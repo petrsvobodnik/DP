@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "hackrf.h"
+//#include "mainwindow.h"
 
 namespace Ui {
 class freqSetting;
