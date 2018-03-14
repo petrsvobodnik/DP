@@ -11,17 +11,20 @@
 #define MHz 1000000
 #define GHz 1000000000
 
+
+// Definiton of default radio parameters
 struct radio_config
 {
     hackrf_device *radioID;
     uint32_t LNAgain = 0;
     uint32_t VGAgain = 0;
     uint8_t antPower = false;
-    uint64_t rxFreq = 20*MHz;
-    double sampleRate = 10*MHz;
+    uint64_t rxFreq = 10*MHz;
+    double sampleRate = 2*MHz;
     int fftlen = 1024;
-    int filterShape;
+    int filterShape = 0;        // 0 - Square, 1 - Hamming, 2 - Hann
     bool hackrf_connected = false;
+    int pathFilter = 0; // 0 - bypass, 1 - LP, 2 - HP
 } ;
 
 

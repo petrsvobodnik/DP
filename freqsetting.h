@@ -16,7 +16,6 @@ class freqSetting : public QDialog
 public:
     explicit freqSetting(QWidget *parent = 0);
     ~freqSetting();
-    void setRadio(hackrf_device *id);
 
 private slots:
     void spinSlidVGA(int);

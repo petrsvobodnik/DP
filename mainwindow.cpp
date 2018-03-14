@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent) :
     listFreqChoice << "Custom" << "Preset 1" << "Preset 2" << "Preset 3";
     ui->CBfreq->addItems(listFreqChoice);
 
-    ui->LEfreq->setText("10000");
+    ui->LEfreq->setText(QString::number(hackConfig.rxFreq/1000));
     ui->LEfreq->setAlignment(Qt::AlignRight);
 
 
@@ -174,7 +174,7 @@ void MainWindow::on_PBfftSettings_clicked()
     // Displaying FreqSetting window
     freqWindow = new freqSetting(this);
     freqWindow->show();
-    freqWindow->setRadio(sdr);
+//    freqWindow->setRadio(sdr);
 }
 
 void MainWindow::on_PBstartRX_clicked()
@@ -314,7 +314,9 @@ void MainWindow::doFFT(){
     for (int i=0; i<N; i++){
         spectrum[i] = 10*log10(sqrt(pow(y[i][REAL],2) + pow(y[i][IMAG],2)));
 //        spectrum[i] = (MainWindow::x[i][REAL]);   // plot data in time domain (real component of the signal)
-        samples[i] = i;
+//        samples[i] = i;
+        samples[i] = hackConfig.rxFreq - hackConfig.sampleRate/2 + (hackConfig.sampleRate/hackConfig.fftlen)*i;  // Assign frequency to FFT data
+
 //        spectrum1[i] = (MainWindow::x[i][IMAG]);  // plot data in time domain (imag component of the signal)
     }
 

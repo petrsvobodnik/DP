@@ -13,6 +13,11 @@ freqSetting::freqSetting(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    QStringList rfPathFilter;
+    rfPathFilter << "Bypass" << "Low pass" << "High pass";
+    ui->CBfilterPath->addItems(rfPathFilter);
+    ui->CBfilterPath->setCurrentIndex(hackConfig.pathFilter);
+
     // allowing defined values of gains and interconnection of slider and spinbox
     ui->VGAslider->setRange(0, 31);
     ui->VGAslider->setSingleStep(2);
@@ -54,9 +59,6 @@ freqSetting::~freqSetting()
     delete ui;
 }
 
-void freqSetting::setRadio(hackrf_device *id){
-    sdr = id;
-}
 
 
 // treating gain values
@@ -87,23 +89,23 @@ void freqSetting::on_PBapply_clicked()
 {
     // setting the values and printing into console
 
-//    uint32_t LNAgain = 8* uint32_t (ui->LNAslider->value());
-    hackConfig.LNAgain = 8* uint32_t (ui->LNAslider->value());
-    hackrf_set_lna_gain(sdr, hackConfig.LNAgain);
-    ui->console->setText("LNA gain set "+ QString::number(hackConfig.LNAgain) + " dB");
 
-//    uint32_t VGAgain = 2*uint32_t (ui->VGAslider->value());
+    hackConfig.LNAgain = 8* uint32_t (ui->LNAslider->value());
+    hackrf_set_lna_gain(hackConfig.radioID, hackConfig.LNAgain);
+    ui->console->setText("LNA gain set "+ QString::number(hackConfig.LNAgain) + "dB");
+
     hackConfig.VGAgain = 2*uint32_t (ui->VGAslider->value());
-    hackrf_set_vga_gain(sdr,hackConfig.VGAgain);
+    hackrf_set_vga_gain(hackConfig.radioID,hackConfig.VGAgain);
     ui->console->append("VGA gain set to: " + QString::number(hackConfig.VGAgain) + "dB");
 
-//    const uint8_t antPow = uint8_t (ui->powerportPB->isChecked());
     hackConfig.antPower = uint8_t (ui->CheckBantPow->isChecked());
-    hackrf_set_antenna_enable(sdr, hackConfig.antPower);
-    if (hackConfig.antPower)
-        ui->console->append("ant pow enabled");
-    else
-        ui->console->append("ant pow disabled");
+    hackrf_set_antenna_enable(hackConfig.radioID, hackConfig.antPower);
+    ui->console->append("Antenna power status: "+ QString::number(hackConfig.antPower));
+
+    hackConfig.pathFilter = ui->CBfilterPath->currentIndex();
+    hackrf_filter_path_name(static_cast<rf_path_filter>(ui->CBfilterPath->currentIndex())); // static_cast ensures correct type conversion
+    ui->console->append("RF path filter: "+ui->CBfilterPath->currentText());
+
 }
 
 void freqSetting::on_PBok_clicked()
