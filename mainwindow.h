@@ -5,8 +5,9 @@
 #include <QTimer>
 #include <hackrf.h>
 #include <fftw3.h>
-#include "freqsetting.h"
 #include "qcustomplot.h"
+#include "freqsetting.h"
+#include "rfusetting.h"
 
 #define MHz 1000000
 #define GHz 1000000000
@@ -52,6 +53,7 @@ private slots:
     void on_PBConnect_clicked();
     void on_PBfftSettings_clicked();
     void on_PBsetFreq_clicked();
+    void on_PBsetWinShape_clicked();
 
     void on_LEfreq_returnPressed();
     void on_LEfreq_textChanged(const QString &arg1);
@@ -59,14 +61,13 @@ private slots:
     void on_SBupperRange_valueChanged(int arg1);
 
 
-    void on_PBsetWinShape_clicked();
+    void on_PBrfuSetting_clicked();
 
 private:
     void defineWindow(double[], int );
     Ui::MainWindow *ui;
-    bool hackrf_connected;
-    double bw;
     freqSetting *freqWindow;
+    RFUsetting *rfuWindow;
     void plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder);
 
 

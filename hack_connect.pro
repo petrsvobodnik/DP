@@ -29,15 +29,18 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     freqsetting.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    rfusetting.cpp
 
 HEADERS += \
         mainwindow.h \
         hackrf.h \
     freqsetting.h \
     qcustomplot.h \
-    main.h
+    main.h \
+    rfusetting.h
 
 FORMS += \
         mainwindow.ui \
-    freqsetting.ui
+    freqsetting.ui \
+    rfusetting.ui

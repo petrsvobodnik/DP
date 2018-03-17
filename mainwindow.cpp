@@ -21,7 +21,7 @@ double spectrum [N];
 double spectrum1 [N];
 double samples [N];
 double fftFiltr [N];
-//radio_config MainWindow::hackConfig;
+float xf [N][2];
 
 //!!! This is bad. this doesn't have to be atomic!!
 volatile int data_ready = 0;
@@ -78,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // graph constructors
     ui->fftGraph->addGraph();
     ui->fftGraph->graph(0)->setPen(QPen(Qt::blue));
-    ui->fftGraph->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20)));
+//    ui->fftGraph->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20)));
     ui->fftGraph->graph(0)->setName("FFT diagram");
 
     ui->fftGraph->addGraph(ui->fftGraph->xAxis, ui->fftGraph->yAxis2);
@@ -86,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->graph(1)->setName("Windowing characteristic");
 
     ui->fftGraph->xAxis->setRange(0,ui->CBwinLen->currentData().toInt());
-    ui->fftGraph->yAxis->setRange(0,50);
+    ui->fftGraph->yAxis->setRange(-100,-20);
     ui->fftGraph->yAxis2->setRange(0,1);
     ui->fftGraph->yAxis2->setVisible(true);
     ui->fftGraph->legend->setVisible(true);
@@ -98,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Y-axis range changing
     ui->SBupperRange->setValue(ui->fftGraph->yAxis->range().upper);
     ui->SBupperRange->setDisabled(true);
+
     ui->labelDate->hide();
     ui->labelTime->hide();
 
@@ -115,8 +116,8 @@ MainWindow::~MainWindow()
 {
 //   Disconnecting from radio
     if(hackConfig.hackrf_connected){
-        hackrf_stop_rx(sdr);
-        hackrf_close(sdr);
+        hackrf_stop_rx(hackConfig.radioID);
+        hackrf_close(hackConfig.radioID);
         puts("Disconnected");
     }
     hackrf_exit();
@@ -130,18 +131,15 @@ void MainWindow::on_PBConnect_clicked()
     // loading list of connected devices
     hackrf_device_list_t* deviceList = hackrf_device_list();
     const char *SN = *deviceList->serial_numbers;
-//    char hilfe = ui->CBhackSN->currentData().toChar()
-//    const char *SN = hilfe;
 
     if(!hackConfig.hackrf_connected){
-        if(hackrf_open_by_serial(SN, &sdr)!= HACKRF_SUCCESS) // radio is being identified by its SN
+        if(hackrf_open_by_serial(SN, &hackConfig.radioID)!= HACKRF_SUCCESS) // radio is being identified by its SN
         {
             QMessageBox::warning(this, "Not connected!", "No HackRF device found");
             puts("Error opening device");
         }
         else{
             // activation of GUI buttons
-            hackConfig.radioID = sdr;
             std::cout << "connected to: "<< SN+16 << std::endl;
             ui->PBstartRX->setDisabled(false);
             ui->PBstopRX->setDisabled(false);
@@ -159,9 +157,8 @@ void MainWindow::on_PBConnect_clicked()
 }
 
 void MainWindow::on_PBsetFFTLength_clicked()
-{
-    double len= ui->CBwinLen->currentText().toInt();
-    hackConfig.fftlen = len;
+{    
+    hackConfig.fftlen = ui->CBwinLen->currentText().toInt();
 }
 
 void MainWindow::on_PBExit_clicked()
@@ -174,13 +171,11 @@ void MainWindow::on_PBfftSettings_clicked()
     // Displaying FreqSetting window
     freqWindow = new freqSetting(this);
     freqWindow->show();
-//    freqWindow->setRadio(sdr);
 }
 
 void MainWindow::on_PBstartRX_clicked()
 {
     // Start reception
-//    hackrf_start_rx(sdr, data_cb, NULL);
     hackrf_start_rx(hackConfig.radioID, data_cb, NULL);
     guiRefresh.start(500);
 }
@@ -188,7 +183,6 @@ void MainWindow::on_PBstartRX_clicked()
 void MainWindow::on_PBstopRX_clicked()
 {
     // End reception
-//    hackrf_stop_rx(sdr);
     hackrf_stop_rx(hackConfig.radioID);
     guiRefresh.stop();
 }
@@ -196,19 +190,15 @@ void MainWindow::on_PBstopRX_clicked()
 void MainWindow::on_PBSampleRate_clicked()
 {
     // change of sample rate
-//    bw = ui->CBsampleRate->currentText().toDouble() * 1000000;
     hackConfig.sampleRate = ui->CBsampleRate->currentText().toDouble() * 1000000;
-
-    hackrf_set_sample_rate(sdr, hackConfig.sampleRate);
+    hackrf_set_sample_rate(hackConfig.radioID, hackConfig.sampleRate);
 }
 
 void MainWindow::on_LEfreq_returnPressed()
 {
     // Set new frequency by pressing Enter
-//    const uint64_t frequency= ui->LEfreq->text().toUInt()*1000;
-//    hackrf_set_freq(sdr, frequency);
     hackConfig.rxFreq = ui->LEfreq->text().toUInt()*1000;
-    hackrf_set_freq(sdr, hackConfig.rxFreq);
+    hackrf_set_freq(hackConfig.radioID, hackConfig.rxFreq);
 }
 
 void MainWindow::on_PBsetFreq_clicked()
@@ -255,6 +245,10 @@ int data_cb(hackrf_transfer* trn){
 
             MainWindow::x[i][REAL] = (double)re; //((trn->buffer[i*2])-128);re // MainWindow::x
             MainWindow::x[i][IMAG] = (double)im; //double((trn->buffer[i*2+1])-128);
+
+            xf[i][REAL] = (double)re;
+            xf[i][IMAG] = (double)im;
+
         }
         MainWindow::data_ready=1;
     }
@@ -282,15 +276,12 @@ void MainWindow::plot(double dataY[], double dataX[], int N, int graphID, bool s
     QVector<double> x = QVector<double>::fromStdVector(x1);
     QVector<double> y = QVector<double>::fromStdVector(y1);
 
-
     ui->fftGraph->graph(graphID)->setData(x,y);
     ui->fftGraph->graph(graphID)->setScatterStyle(QCPScatterStyle::ssNone);
     ui->fftGraph->graph(graphID)->setLineStyle(QCPGraph::lsLine);
 
-
     ui->fftGraph->xAxis->rescale();
     ui->fftGraph->replot();
-//    ui->fftGraph->update();
     return;
 }
 
@@ -304,20 +295,19 @@ void MainWindow::doFFT(){
 
 //    // FFT window shaping
     for (int i=0; i<N; i++){
-        MainWindow::x[i][0] *= fftFiltr[i];
-        MainWindow::x[i][1] *= fftFiltr[i];
+        xf[i][0] *= fftFiltr[i];
+        xf[i][1] *= fftFiltr[i];
     }
 
     // Planning the fft
-    fftwf_plan plan = fftwf_plan_dft_1d(N,MainWindow::x,y,FFTW_FORWARD,FFTW_ESTIMATE);
+    fftwf_plan plan = fftwf_plan_dft_1d(N,xf,y,FFTW_FORWARD,FFTW_ESTIMATE);
     fftwf_execute(plan);
     for (int i=0; i<N; i++){
-        spectrum[i] = 10*log10(sqrt(pow(y[i][REAL],2) + pow(y[i][IMAG],2)));
+        spectrum[i] = 10*log10(sqrt(pow(y[i][REAL],2) + pow(y[i][IMAG],2))) - 100;
 //        spectrum[i] = (MainWindow::x[i][REAL]);   // plot data in time domain (real component of the signal)
-//        samples[i] = i;
-        samples[i] = hackConfig.rxFreq - hackConfig.sampleRate/2 + (hackConfig.sampleRate/hackConfig.fftlen)*i;  // Assign frequency to FFT data
-
 //        spectrum1[i] = (MainWindow::x[i][IMAG]);  // plot data in time domain (imag component of the signal)
+
+        samples[i] = hackConfig.rxFreq - hackConfig.sampleRate/2 + (hackConfig.sampleRate/hackConfig.fftlen)*i;  // Assign frequency to FFT data
     }
 
 
@@ -367,7 +357,12 @@ void MainWindow::defineWindow(double fftWindow[], int typ){
 
 void MainWindow::on_PBsetWinShape_clicked()
 {
-    //    int filterType = ui->CBwinShape->currentIndex();
     hackConfig.filterShape = ui->CBwinShape->currentIndex();
     defineWindow(fftFiltr, hackConfig.filterShape);
+}
+
+void MainWindow::on_PBrfuSetting_clicked()
+{
+    rfuWindow = new RFUsetting;
+    rfuWindow->show();
 }
