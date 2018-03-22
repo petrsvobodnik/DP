@@ -20,6 +20,8 @@ private slots:
 
     void on_PBapply_clicked();
 
+    void on_PBgetGain_clicked();
+
 private:
     Ui::RFUsetting *ui;
 };

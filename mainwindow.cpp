@@ -6,22 +6,20 @@
 #include "qcustomplot.h"
 #include "main.h"
 
-radio_config hackConfig;
 
 int data_cb(hackrf_transfer*);
+
+radio_config hackConfig;
 const int N = 1024;
-
-//static fftwf_complex x[N];
-//static fftwf_complex x[1024];
-
 volatile int MainWindow::data_ready = 0;
-fftwf_complex MainWindow::x[N];
-//static fftwf_complex x[N];
 double spectrum [N];
 double spectrum1 [N];
 double samples [N];
 double fftFiltr [N];
 float xf [N][2];
+QString saveFileName;
+bool saveEnabled = 0;
+int saveCounter;
 
 //!!! This is bad. this doesn't have to be atomic!!
 volatile int data_ready = 0;
@@ -44,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     // Definition of CB's text items
-    QStringList listRates, listLength, listWindow, listFreqChoice, listSN;
+    QStringList listRates, listWindow, listFreqChoice, listSN;
 
     for (int i =0; i<=deviceList->devicecount-1; i++){
         listSN << deviceList->serial_numbers[i]+16;
@@ -53,9 +51,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     listRates << "2" << "4" << "8" << "10" << "20";
     ui->CBsampleRate->addItems(listRates);
-
-    listLength << "1024"<<"2048"<<"4096"<<"8192"<<"16384";
-    ui->CBwinLen->addItems(listLength);
 
     listWindow << "Square" << "Hamming" << "Hann";
     ui->CBwinShape->addItems(listWindow);
@@ -71,9 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->PBstartRX->setDisabled(true);
     ui->PBstopRX->setDisabled(true);
     ui->PBSampleRate->setDisabled(true);
-    ui->PBsetFFTLength->setDisabled(true);
     ui->PBsetFreq->setDisabled(true);
-
 
     // graph constructors
     ui->fftGraph->addGraph();
@@ -85,7 +78,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->graph(1)->setPen(QPen(Qt::red));
     ui->fftGraph->graph(1)->setName("Windowing characteristic");
 
-    ui->fftGraph->xAxis->setRange(0,ui->CBwinLen->currentData().toInt());
     ui->fftGraph->yAxis->setRange(-100,-20);
     ui->fftGraph->yAxis2->setRange(0,1);
     ui->fftGraph->yAxis2->setVisible(true);
@@ -101,6 +93,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->labelDate->hide();
     ui->labelTime->hide();
+    ui->labelSaving->hide();
 
     // Preparation for adding another graph
 //    ui->fftGraph->addGraph();
@@ -144,10 +137,12 @@ void MainWindow::on_PBConnect_clicked()
             ui->PBstartRX->setDisabled(false);
             ui->PBstopRX->setDisabled(false);
             ui->PBSampleRate->setDisabled(false);
-            ui->PBsetFFTLength->setDisabled(false);
             ui->PBsetFreq->setDisabled(false);
             ui->SBupperRange->setDisabled(false);
             ui->PBConnect->setText("Connected");
+            ui->actionStart_saving->setDisabled(1);
+            ui->actionStop_saving->setDisabled(1);
+
             ui->statusBar->showMessage("Connected");
         }
 
@@ -156,13 +151,12 @@ void MainWindow::on_PBConnect_clicked()
     }
 }
 
-void MainWindow::on_PBsetFFTLength_clicked()
-{    
-    hackConfig.fftlen = ui->CBwinLen->currentText().toInt();
-}
 
 void MainWindow::on_PBExit_clicked()
 {
+    if (saveEnabled)
+        on_actionStop_saving_triggered();
+    on_PBstopRX_clicked();
     window()->close();
 }
 
@@ -243,8 +237,8 @@ int data_cb(hackrf_transfer* trn){
             re = trn->buffer[i*2];
             im = trn->buffer[i*2+1];
 
-            MainWindow::x[i][REAL] = (double)re; //((trn->buffer[i*2])-128);re // MainWindow::x
-            MainWindow::x[i][IMAG] = (double)im; //double((trn->buffer[i*2+1])-128);
+//            MainWindow::x[i][REAL] = (double)re; //((trn->buffer[i*2])-128);re // MainWindow::x
+//            MainWindow::x[i][IMAG] = (double)im; //double((trn->buffer[i*2+1])-128);
 
             xf[i][REAL] = (double)re;
             xf[i][IMAG] = (double)im;
@@ -307,7 +301,7 @@ void MainWindow::doFFT(){
 //        spectrum[i] = (MainWindow::x[i][REAL]);   // plot data in time domain (real component of the signal)
 //        spectrum1[i] = (MainWindow::x[i][IMAG]);  // plot data in time domain (imag component of the signal)
 
-        samples[i] = hackConfig.rxFreq - hackConfig.sampleRate/2 + (hackConfig.sampleRate/hackConfig.fftlen)*i;  // Assign frequency to FFT data
+        samples[i] = hackConfig.rxFreq - hackConfig.sampleRate/2 + (hackConfig.sampleRate/N)*i;  // Assign frequency to FFT data
     }
 
 
@@ -315,6 +309,10 @@ void MainWindow::doFFT(){
     plot(fftFiltr, samples, N, 1, false);
     plot(spectrum, samples, N, 0, true);
 //    plot(spectrum1, samples, N, 2);
+
+// // Saving data
+    if (saveEnabled)
+        saveMeasuredData(spectrum);
 
 //    //cleaning
 //    fftwf_destroy_plan(plan);
@@ -325,7 +323,7 @@ void MainWindow::doFFT(){
     a++;
     s.asprintf("%d",a);
     ui->label_2->setText(s);
-    ui->labelTime->setText("Current time: "+QDateTime::currentDateTime().toString("hh:mm:ss")); //dd.MM.yy"));
+    ui->labelTime->setText("Current time: "+QDateTime::currentDateTime().toString("hh:mm:ss.z")); //dd.MM.yy"));
     ui->labelTime->show();
     ui->labelDate->setText("Current date: "+QDateTime::currentDateTime().toString("dd.MM.yy"));
     ui->labelDate->show();
@@ -365,4 +363,75 @@ void MainWindow::on_PBrfuSetting_clicked()
 {
     rfuWindow = new RFUsetting;
     rfuWindow->show();
+}
+
+void MainWindow::saveMeasuredData(double FFTdata[]){
+    QFile fileInput(saveFileName);
+
+    if (fileInput.open(QFile::WriteOnly| QFile::Append)){
+        QTextStream textStream (&fileInput);
+        textStream.setRealNumberPrecision(4);
+        textStream << QDateTime::currentDateTime().toString("hh:mm:ss.zzz") << "\t";
+
+        for (int i=0; i<1023; i++){     // missing one component as max count of csv columns is 1024!!!
+            textStream << FFTdata[i] << "\t";
+        }
+        textStream<< "\n";
+    }
+    saveCounter++;
+}
+
+void MainWindow::on_actionSet_up_save_file_triggered()
+{
+    saveFileName = QFileDialog::getSaveFileName(this, "Pick existing file or name a new one", "/home/golem/Downloads", "CSV file (*.csv)");
+    if(!saveFileName.contains(".csv"))
+        saveFileName.append(".csv");
+    saveCounter = 1;
+    ui->actionStart_saving->setDisabled(0);
+}
+
+void MainWindow::on_actionStart_saving_triggered()
+{
+    // Assuring to not overwrite previous data
+    if (saveFileName==""){
+        QMessageBox::warning(this, "No file selected", "You need to choose file for saving again!");
+        return;
+    }
+
+    QFile fileInput(saveFileName);
+
+    if (fileInput.open(QFile::WriteOnly)){
+        QTextStream textStream (&fileInput);
+
+        textStream << "Saved data from: \t" << QDateTime::currentDateTime().toString("dd. MM. yyyy") <<
+                      "\nCentral frequency: \t" << hackConfig.rxFreq/1000 << "\tkHz\n"<<
+                      "Span:\t" << hackConfig.sampleRate/1000000 << "\tMHz\n\n";
+        fileInput.flush();
+    }
+
+    ui->LEfreq->setDisabled(true);
+    ui->PBsetFreq->setDisabled(true);
+    ui->actionStop_saving->setDisabled(0);
+    ui->labelSaving->show();
+
+    saveEnabled = true;
+}
+
+void MainWindow::on_actionStop_saving_triggered()
+{
+    if (saveEnabled){
+        saveEnabled = false;
+        ui->LEfreq->setDisabled(0);
+        ui->PBsetFreq->setDisabled(0);
+        ui->actionStart_saving->setDisabled(0);
+        ui->actionStop_saving->setDisabled(1);
+        ui->labelSaving->hide();
+
+        QFile fileInput(saveFileName);
+        fileInput.close();
+        saveFileName = "";
+
+        QString info = "Saving succesful\nNo. of records: " + QString::number(saveCounter) + "\nFile size: " + QString::number( fileInput.size()/1023) + "kB";
+        QMessageBox::information(this,"Saving finished", info);
+    }
 }

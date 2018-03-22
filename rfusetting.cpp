@@ -9,6 +9,9 @@ RFUsetting::RFUsetting(QWidget *parent) :
     ui(new Ui::RFUsetting)
 {
     ui->setupUi(this);
+    ui->LEfreq->setText(QString::number(hackConfig.rxFreq/1000));
+    ui->LEfreq->setAlignment(Qt::AlignRight);
+    ui->label->setText("Frequency [kHz]");
 }
 
 RFUsetting::~RFUsetting()
@@ -23,6 +26,11 @@ void RFUsetting::on_PBok_clicked()
 }
 
 void RFUsetting::on_PBapply_clicked()
+{
+
+}
+
+void RFUsetting::on_PBgetGain_clicked()
 {
 
 }

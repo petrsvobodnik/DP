@@ -22,7 +22,6 @@ struct radio_config
     uint8_t antPower = false;
     uint64_t rxFreq = 10*MHz;
     double sampleRate = 2*MHz;
-    int fftlen = 1024;
     int filterShape = 0;        // 0 - Square, 1 - Hamming, 2 - Hann
     bool hackrf_connected = false;
     int pathFilter = 0; // 0 - bypass, 1 - LP, 2 - HP
@@ -40,12 +39,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    hackrf_device* sdr;
 
 
 private slots:
-    void doFFT();
-    void on_PBsetFFTLength_clicked();
     void on_PBstartRX_clicked();
     void on_PBstopRX_clicked();
     void on_PBSampleRate_clicked();
@@ -54,25 +50,31 @@ private slots:
     void on_PBfftSettings_clicked();
     void on_PBsetFreq_clicked();
     void on_PBsetWinShape_clicked();
+    void on_PBrfuSetting_clicked();
+    void on_SBupperRange_valueChanged(int arg1);
+
+    void on_actionSet_up_save_file_triggered();
+    void on_actionStart_saving_triggered();
+    void on_actionStop_saving_triggered();
 
     void on_LEfreq_returnPressed();
     void on_LEfreq_textChanged(const QString &arg1);
 
-    void on_SBupperRange_valueChanged(int arg1);
-
-
-    void on_PBrfuSetting_clicked();
+    void doFFT();
 
 private:
     void defineWindow(double[], int );
+    void plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder);
+    void saveMeasuredData(double FFTdata[]);
+
     Ui::MainWindow *ui;
     freqSetting *freqWindow;
     RFUsetting *rfuWindow;
-    void plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder);
+
 
 
 public:
-    static fftwf_complex x[1024];
+//    static fftwf_complex x[1024];
     QTimer guiRefresh;
     //!!! This is bad. this doesn't have to be atomic!!
     static volatile int data_ready;
