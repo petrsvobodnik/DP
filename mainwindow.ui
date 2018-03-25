@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>900</width>
-    <height>600</height>
+    <width>901</width>
+    <height>719</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>270</y>
+      <y>150</y>
       <width>80</width>
       <height>22</height>
      </rect>
@@ -56,14 +56,14 @@
    <widget class="QPushButton" name="PBfftSettings">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>180</y>
-      <width>111</width>
+      <x>20</x>
+      <y>40</y>
+      <width>121</width>
       <height>22</height>
      </rect>
     </property>
     <property name="text">
-     <string>SDR settings</string>
+     <string>SDR gain settings</string>
     </property>
    </widget>
    <widget class="QPushButton" name="PBstartRX">
@@ -98,7 +98,7 @@
       <x>190</x>
       <y>49</y>
       <width>681</width>
-      <height>481</height>
+      <height>271</height>
      </rect>
     </property>
     <property name="palette">
@@ -520,8 +520,8 @@
    <widget class="QComboBox" name="CBwinShape">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>110</y>
+      <x>15</x>
+      <y>230</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -620,7 +620,7 @@
      </palette>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Frequency range warning</string>
     </property>
    </widget>
    <widget class="QSpinBox" name="SBupperRange">
@@ -691,7 +691,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>245</y>
+      <y>125</y>
       <width>151</width>
       <height>22</height>
      </rect>
@@ -704,7 +704,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>230</y>
+      <y>110</y>
       <width>171</width>
       <height>16</height>
      </rect>
@@ -716,8 +716,8 @@
    <widget class="QPushButton" name="PBsetWinShape">
     <property name="geometry">
      <rect>
-      <x>95</x>
-      <y>110</y>
+      <x>100</x>
+      <y>230</y>
       <width>90</width>
       <height>25</height>
      </rect>
@@ -729,8 +729,8 @@
    <widget class="QComboBox" name="CBsampleRate">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>80</y>
+      <x>15</x>
+      <y>200</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -739,8 +739,8 @@
    <widget class="QPushButton" name="PBSampleRate">
     <property name="geometry">
      <rect>
-      <x>95</x>
-      <y>80</y>
+      <x>100</x>
+      <y>200</y>
       <width>90</width>
       <height>25</height>
      </rect>
@@ -752,9 +752,9 @@
    <widget class="QPushButton" name="PBrfuSetting">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>160</y>
-      <width>111</width>
+      <x>20</x>
+      <y>10</y>
+      <width>121</width>
       <height>22</height>
      </rect>
     </property>
@@ -818,13 +818,23 @@
      <string>Saving data</string>
     </property>
    </widget>
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>340</y>
+      <width>681</width>
+      <height>261</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>900</width>
+     <width>901</width>
      <height>19</height>
     </rect>
    </property>

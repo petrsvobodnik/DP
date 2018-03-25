@@ -68,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->PBSampleRate->setDisabled(true);
     ui->PBsetFreq->setDisabled(true);
 
+
     // graph constructors
     ui->fftGraph->addGraph();
     ui->fftGraph->graph(0)->setPen(QPen(Qt::blue));
@@ -95,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->labelTime->hide();
     ui->labelSaving->hide();
 
-    // Preparation for adding another graph
+//    // Preparation for adding another graph
 //    ui->fftGraph->addGraph();
 //    ui->fftGraph->graph(2)->setPen(QPen(Qt::green));
 
@@ -216,7 +217,8 @@ void MainWindow::on_LEfreq_textChanged(const QString &arg1)
     {
         ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
         //        LEcolor.setBrush(QPalette::Base, Qt::white);
-        ui->PBsetFreq->setDisabled(false);
+        if (hackConfig.hackrf_connected)    // check whether radio is connected before enabling the button
+            ui->PBsetFreq->setDisabled(false);
         ui->label_5->hide();
     }
 
@@ -297,7 +299,7 @@ void MainWindow::doFFT(){
     fftwf_plan plan = fftwf_plan_dft_1d(N,xf,y,FFTW_FORWARD,FFTW_ESTIMATE);
     fftwf_execute(plan);
     for (int i=0; i<N; i++){
-        spectrum[i] = 10*log10(sqrt(pow(y[i][REAL],2) + pow(y[i][IMAG],2))) - 100;
+        spectrum[i] = 5*log10(y[i][REAL]*y[i][REAL] + y[i][IMAG]*y[i][IMAG] ) - 100; // computing w/o sqrt and pow
 //        spectrum[i] = (MainWindow::x[i][REAL]);   // plot data in time domain (real component of the signal)
 //        spectrum1[i] = (MainWindow::x[i][IMAG]);  // plot data in time domain (imag component of the signal)
 
@@ -308,7 +310,7 @@ void MainWindow::doFFT(){
 // // plotting graphs
     plot(fftFiltr, samples, N, 1, false);
     plot(spectrum, samples, N, 0, true);
-//    plot(spectrum1, samples, N, 2);
+//    plot(spectrum1, samples, N, 2, true);
 
 // // Saving data
     if (saveEnabled)
@@ -323,9 +325,9 @@ void MainWindow::doFFT(){
     a++;
     s.asprintf("%d",a);
     ui->label_2->setText(s);
-    ui->labelTime->setText("Current time: "+QDateTime::currentDateTime().toString("hh:mm:ss.z")); //dd.MM.yy"));
-    ui->labelTime->show();
+    ui->labelTime->setText("Current time: "+QDateTime::currentDateTime().toString("hh:mm:ss"));
     ui->labelDate->setText("Current date: "+QDateTime::currentDateTime().toString("dd.MM.yy"));
+    ui->labelTime->show();
     ui->labelDate->show();
 }
 
@@ -361,7 +363,7 @@ void MainWindow::on_PBsetWinShape_clicked()
 
 void MainWindow::on_PBrfuSetting_clicked()
 {
-    rfuWindow = new RFUsetting;
+    rfuWindow = new RFUsetting(this);
     rfuWindow->show();
 }
 
