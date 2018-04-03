@@ -5,6 +5,7 @@
 #include "freqsetting.h"
 #include "qcustomplot.h"
 #include "main.h"
+#include "zerospan.h"
 
 
 int data_cb(hackrf_transfer*);
@@ -38,7 +39,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    ui->labelNoofDevices->setText("HackRF's found: "+QString::number(deviceList->devicecount));
+    if (deviceList->devicecount == 0)
+        ui->labelNoofDevices->setText("No HackRF connected");
+    else
+        ui->labelNoofDevices->setText("HackRF's found: "+QString::number(deviceList->devicecount));
 
 
     // Definition of CB's text items
@@ -72,7 +76,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // graph constructors
     ui->fftGraph->addGraph();
     ui->fftGraph->graph(0)->setPen(QPen(Qt::blue));
-//    ui->fftGraph->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20)));
     ui->fftGraph->graph(0)->setName("FFT diagram");
 
     ui->fftGraph->addGraph(ui->fftGraph->xAxis, ui->fftGraph->yAxis2);
@@ -95,6 +98,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->labelDate->hide();
     ui->labelTime->hide();
     ui->labelSaving->hide();
+    ui->labelFileExists->hide();
+
+    ui->LEfileName->setText(QDir::homePath());
+    ui->labelFileExists->hide();
+    ui->PBsaveStart->setDisabled(true);
+    ui->PBsaveStop->setDisabled(true);
+
 
 //    // Preparation for adding another graph
 //    ui->fftGraph->addGraph();
@@ -143,6 +153,7 @@ void MainWindow::on_PBConnect_clicked()
             ui->PBConnect->setText("Connected");
             ui->actionStart_saving->setDisabled(1);
             ui->actionStop_saving->setDisabled(1);
+            ui->PBsaveStart->setDisabled(false);
 
             ui->statusBar->showMessage("Connected");
         }
@@ -156,7 +167,7 @@ void MainWindow::on_PBConnect_clicked()
 void MainWindow::on_PBExit_clicked()
 {
     if (saveEnabled)
-        on_actionStop_saving_triggered();
+        on_PBsaveStop_clicked();
     on_PBstopRX_clicked();
     window()->close();
 }
@@ -367,10 +378,10 @@ void MainWindow::on_PBrfuSetting_clicked()
     rfuWindow->show();
 }
 
-void MainWindow::saveMeasuredData(double FFTdata[]){
+void MainWindow::saveMeasuredData(double FFTdata[]){        // saving data itself
     QFile fileInput(saveFileName);
 
-    if (fileInput.open(QFile::WriteOnly| QFile::Append)){
+    if (fileInput.open(QIODevice::WriteOnly| QIODevice::Append)){
         QTextStream textStream (&fileInput);
         textStream.setRealNumberPrecision(4);
         textStream << QDateTime::currentDateTime().toString("hh:mm:ss.zzz") << "\t";
@@ -383,16 +394,88 @@ void MainWindow::saveMeasuredData(double FFTdata[]){
     saveCounter++;
 }
 
-void MainWindow::on_actionSet_up_save_file_triggered()
+
+//void MainWindow::on_actionSet_up_save_file_triggered()      // user picks file to save to
+//{
+//    saveFileName = QFileDialog::getSaveFileName(this, "Pick existing file or name a new one", "/home/golem/Downloads", "CSV file (*.csv)");
+//    if(!saveFileName.contains(".csv"))
+//        saveFileName.append(".csv");
+//    saveCounter = 1;
+//    ui->actionStart_saving->setDisabled(0);
+//}
+
+//void MainWindow::on_actionStart_saving_triggered()      // start saving
+//{
+//    // Assuring to not overwrite previous data
+//    if (saveFileName==""){
+//        QMessageBox::warning(this, "No file selected", "You need to choose file for saving again!");
+//        return;
+//    }
+
+//    QFile fileInput(saveFileName);
+
+//    if (fileInput.open(QFile::WriteOnly)){
+//        QTextStream textStream (&fileInput);
+
+//        textStream << "Saved data from: \t" << QDateTime::currentDateTime().toString("dd. MM. yyyy") <<
+//                      "\nCentral frequency: \t" << hackConfig.rxFreq/1000 << "\tkHz\n"<<
+//                      "Span:\t" << hackConfig.sampleRate/1000000 << "\tMHz\n\n";
+//        fileInput.flush();
+//        fileInput.close();
+//    }
+
+//    saveFrequencies(samples);
+
+//    ui->LEfreq->setDisabled(true);
+//    ui->PBsetFreq->setDisabled(true);
+//    ui->actionStop_saving->setDisabled(0);
+//    ui->labelSaving->show();
+
+//    saveEnabled = true;     // allows saving in plot() function
+//}
+
+
+//void MainWindow::on_actionStop_saving_triggered()
+//{
+//    if (saveEnabled){
+//        saveEnabled = false;
+//        ui->LEfreq->setDisabled(0);
+//        ui->PBsetFreq->setDisabled(0);
+//        ui->actionStart_saving->setDisabled(0);
+//        ui->actionStop_saving->setDisabled(1);
+//        ui->labelSaving->hide();
+
+//        QFile fileInput(saveFileName);
+//        fileInput.close();
+//        saveFileName = "";
+
+//        QString info = "Saving succesful\nNo. of records: " + QString::number(saveCounter) + "\nFile size: " + QString::number( fileInput.size()/1023) + "kB";
+//        QMessageBox::information(this,"Saving finished", info);
+//    }
+//}
+
+void MainWindow::on_PBchooseDir_clicked()
 {
-    saveFileName = QFileDialog::getSaveFileName(this, "Pick existing file or name a new one", "/home/golem/Downloads", "CSV file (*.csv)");
-    if(!saveFileName.contains(".csv"))
-        saveFileName.append(".csv");
-    saveCounter = 1;
-    ui->actionStart_saving->setDisabled(0);
+    ui->LEfileName->setText(QFileDialog::getExistingDirectory(this, "Choose directory", "/home/golem/Downloads"));
 }
 
-void MainWindow::on_actionStart_saving_triggered()
+void MainWindow::on_PBassignFileName_clicked()
+{
+    QString name = ui->LEfileName->text();
+
+    if(name.contains("csv")){
+       name.truncate(name.lastIndexOf(QChar('/')));
+    }
+
+    saveFileName = ui->LEfileName->text() + "/" + QDateTime::currentDateTime().toString("dd-MM-yy") + "_" + QString::number( hackConfig.rxFreq/1000) + "kHz.csv";
+    ui->LEfileName->setText(saveFileName);
+    if(hackConfig.hackrf_connected)
+        ui->PBsaveStart->setDisabled(false);
+    saveCounter = 1;
+}
+
+
+void MainWindow::on_PBsaveStart_clicked()
 {
     // Assuring to not overwrite previous data
     if (saveFileName==""){
@@ -402,31 +485,58 @@ void MainWindow::on_actionStart_saving_triggered()
 
     QFile fileInput(saveFileName);
 
-    if (fileInput.open(QFile::WriteOnly)){
+    if (fileInput.exists())
+        QMessageBox::warning(this, "waring", "Existing file will be overwritten!");
+
+    if (fileInput.open(QIODevice::WriteOnly)){
         QTextStream textStream (&fileInput);
 
         textStream << "Saved data from: \t" << QDateTime::currentDateTime().toString("dd. MM. yyyy") <<
                       "\nCentral frequency: \t" << hackConfig.rxFreq/1000 << "\tkHz\n"<<
                       "Span:\t" << hackConfig.sampleRate/1000000 << "\tMHz\n\n";
         fileInput.flush();
+        fileInput.close();
     }
+
+    saveFrequencies(samples);
 
     ui->LEfreq->setDisabled(true);
     ui->PBsetFreq->setDisabled(true);
-    ui->actionStop_saving->setDisabled(0);
+    ui->PBsaveStop->setDisabled(false);
+    ui->PBsaveStart->setDisabled(true);
+    ui->PBassignFileName->setDisabled(true);
+    ui->PBchooseDir->setDisabled(true);
+    ui->LEfileName->setReadOnly(true);
     ui->labelSaving->show();
 
-    saveEnabled = true;
+    saveEnabled = true;     // allows saving in plot() function
 }
 
-void MainWindow::on_actionStop_saving_triggered()
+
+void MainWindow::saveFrequencies(double freq[])       // write values of saved frequencies
+{
+    QFile fileInput(saveFileName);
+
+    if (fileInput.open(QIODevice::WriteOnly | QIODevice::Append)){
+        QTextStream textStream (&fileInput);
+        textStream.setRealNumberPrecision(8);
+        textStream <<  "Frequency [kHz]\t";
+
+        for (int i=0; i<1023; i++){     // missing one component as max count of csv columns is 1024!!!
+            textStream << freq[i]/1000 << "\t";     // saving in kHz
+        }
+        textStream<< "\n";
+    }
+}
+
+void MainWindow::on_PBsaveStop_clicked()
 {
     if (saveEnabled){
         saveEnabled = false;
-        ui->LEfreq->setDisabled(0);
-        ui->PBsetFreq->setDisabled(0);
-        ui->actionStart_saving->setDisabled(0);
-        ui->actionStop_saving->setDisabled(1);
+        ui->LEfreq->setDisabled(false);
+        ui->PBsetFreq->setDisabled(false);
+        ui->PBsaveStart->setDisabled(false);
+        ui->PBsaveStop->setDisabled(true);
         ui->labelSaving->hide();
 
         QFile fileInput(saveFileName);
@@ -434,6 +544,22 @@ void MainWindow::on_actionStop_saving_triggered()
         saveFileName = "";
 
         QString info = "Saving succesful\nNo. of records: " + QString::number(saveCounter) + "\nFile size: " + QString::number( fileInput.size()/1023) + "kB";
-        QMessageBox::information(this,"Saving finished", info);
+        QMessageBox::information(this,"Saving finished", info);\
     }
+}
+
+void MainWindow::on_LEfileName_textChanged(const QString &arg1)
+{
+    QFile fileInput(arg1);
+
+    if (fileInput.exists())
+        ui->labelFileExists->show();
+    else
+        ui->labelFileExists->hide();
+}
+
+void MainWindow::on_PBzeroSpan_clicked()
+{
+    zeroSpan *winZeroSpan = new zeroSpan(this);
+    winZeroSpan->exec();
 }

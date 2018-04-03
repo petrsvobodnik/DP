@@ -2,8 +2,11 @@
 #include "ui_rfusetting.h"
 #include "mainwindow.h"
 #include <QDebug>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 
 extern radio_config hackConfig;
+QSerialPort port;
 
 RFUsetting::RFUsetting(QWidget *parent) :
     QDialog(parent),
@@ -16,12 +19,13 @@ RFUsetting::RFUsetting(QWidget *parent) :
     ui->label->setText("Frequency [kHz]");
 
     ui->SBazimuth->setValue(0);
-    ui->SBelevation->setValue(0);
 
     ui->RBgroupLEVEL->setId(ui->RBlevelAMP, 1);
     ui->RBgroupLEVEL->setId(ui->RBlevelATT, 2);
     ui->RBgroupLEVEL->setId(ui->RBlevelBypass, 3);
 
+    ui->RBgroupPOLARISATION->setId(ui->RBpolarisationH, 1);
+    ui->RBgroupPOLARISATION->setId(ui->RBpolarisationV, 2);
 
     connect(ui->RBgroupLEVEL, SIGNAL(buttonClicked(int)), this, SLOT(RBgroupLEVEL_clicked(int)));
     connect(ui->RBgroupLEVEL, SIGNAL(buttonClicked(int)), this, SLOT(computeGain()));
@@ -36,6 +40,7 @@ RFUsetting::RFUsetting(QWidget *parent) :
 
     ui->RBlevelATT->setChecked(true);
     ui->SBlevel->setValue(-55);
+    ui->SBazimuth->setValue(0);
 
     ui->RBfiltBypass->setChecked(true);
     ui->LEfiltGain->setText(QString::number(0));
@@ -46,29 +51,41 @@ RFUsetting::RFUsetting(QWidget *parent) :
     computeGain();
 
     ui->label_6->hide();
-    ui->CBserialPortAR->addItem("COM1");
-    ui->CBserialPortAR->addItem("COM2");
-    ui->CBserialPortAR->addItem("COM3");
+
+
+    ui->GBpolarisation->setDisabled(true);
+    ui->GBazimuth->setDisabled(true);
+
+    QStringList listOfPorts;
+    QList <QSerialPortInfo> portInfo = QSerialPortInfo::availablePorts();
+    for (int i=0; i<portInfo.length(); i++)
+        listOfPorts.append(portInfo[i].portName());
+    ui->CBserialPortAR->addItems(listOfPorts);
+
+    if (portInfo.length()==0){
+        qDebug() << "Names of ports are made up";
+        ui->CBserialPortAR->addItem("COM1");
+        ui->CBserialPortAR->addItem("COM2");
+        ui->CBserialPortAR->addItem("COM3");
+    }
 }
 
 RFUsetting::~RFUsetting()
 {
     delete ui;
+    port.close();
 }
 
 void RFUsetting::on_PBok_clicked()
 {
-    on_PBapply_clicked();
+    hackConfig.RFUgain = ui->LEtotalGain->text().toFloat();
+    qDebug() << "RFU's gain is: " << hackConfig.RFUgain;
     this->close();
 }
 
-void RFUsetting::on_PBapply_clicked()
+void RFUsetting::on_PBgetGain_clicked() // SET ALL
 {
-
-}
-
-void RFUsetting::on_PBgetGain_clicked()
-{
+//    This  button will set  RF unit -- will send commands to microcontroller
 
 }
 
@@ -77,77 +94,57 @@ void RFUsetting::on_PBstopRotator_clicked()
     // send command S, pak zjistit stav a obnovit SBazimuth a SBelevation
 }
 
-void RFUsetting::on_PBreadRotator_clicked()
-{
-    // send C for azimuth
-    // C2 for elevation
-    // value 0-1023 is returned
-    ui->SBazimuth->setValue(0);
-    ui->SBelevation->setValue(0);
-}
 
 void RFUsetting::on_PBsetRotator_clicked()
 {
     // send W xxx yyy for setting the angles (xxx = Azim. Angle; yyy = Elev. Angle). Example: W350 163
     int x = 360; // range of azimuth rotation
-    int y = 90; // range of elevation
-    int xxx = ui->SBazimuth->value() * 1024/x;
-    int yyy = ui->SBelevation->value() * 1024/y;
+    int xx = ui->SBazimuth->value();    // help variable
+    int xxx;
 
 
-    qDebug() << "Azimuth: " << xxx << "\t Elevation: " <<yyy;
+    if (xx>=0)
+        xxx = xx * 1024/x;
+    else
+        xxx = (xx+360) * 1024/x;
+
+//    port.write("M"+QString::number(xxx));
+
+    qDebug() << "Azimuth: " << xxx ;
 }
 
-
-void RFUsetting::on_PBrotUP_pressed()
-{
-    // U, timerem cyklicky obnovovat hodnotu elevace
-    ui->label_6->show();
-}
-
-void RFUsetting::on_PBrotUP_released()
-{
-    // send S
-    ui->label_6->hide();
-}
-
-void RFUsetting::on_PBrotDOWN_pressed()
-{
-    // D
-    ui->label_6->show();
-}
-
-void RFUsetting::on_PBrotDOWN_released()
-{
-    // send S
-    ui->label_6->hide();
-}
 
 void RFUsetting::on_PBrotLEFT_pressed()
 {
     // L timerem cyklicky obnovovat hodnotu azimutu
     ui->label_6->show();
+    port.write("L");
 }
 
 void RFUsetting::on_PBrotLEFT_released()
 {
     // send S
     ui->label_6->hide();
+    port.write("S");
+    getRotatorState();
 }
 
 void RFUsetting::on_PBrotRIGHT_pressed()
 {
     // R
     ui->label_6->show();
+    port.write("R");
 }
 
 void RFUsetting::on_PBrotRIGHT_released()
 {
     // send S
     ui->label_6->hide();
+    port.write("S");
+    getRotatorState();
 }
 
-void RFUsetting::RBgroupLEVEL_clicked(int button){
+void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
     int ampGain = 40;
 
     switch (button) {
@@ -198,5 +195,29 @@ void RFUsetting::computeGain(){
 
 void RFUsetting::on_PBconnectAR_clicked()
 {
+    ui->GBazimuth->setDisabled(false);
     QMessageBox::information(this, "Connection established", "Connected to "+ui->CBserialPortAR->currentText());
+    // rovnou vycist uhel natoceni rotatoru a polarizaci
+
+    port.setPortName(ui->CBserialPortAR->currentText());
+    port.open(QIODevice::ReadWrite);
+    port.setBaudRate(QSerialPort::Baud9600);
+    port.setDataBits(QSerialPort::Data8);
+    port.setParity(QSerialPort::NoParity);
+    port.setStopBits(QSerialPort::OneStop);
+    port.setFlowControl(QSerialPort::NoFlowControl);
+    getRotatorState();
+
+}
+
+void RFUsetting::on_PBsetpolarisation_clicked()
+{
+
+}
+
+void RFUsetting::getRotatorState(){
+    int readAngle;
+    port.write("C");
+    // osetrit cteni z portu a nastaveni hodnoty do GUI
+//    ui->SBazimuth->setValue(readAngle/1024*360);
 }

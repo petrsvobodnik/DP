@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport
+QT       += core gui printsupport serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -25,12 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 LIBS += -lhackrf # tento zkurveny radek se musi vlozit, aby to jelo
 LIBS += /usr/local/lib/libfftw3.a -lfftw3f
 
+
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
     freqsetting.cpp \
     qcustomplot.cpp \
-    rfusetting.cpp
+    rfusetting.cpp \
+    zerospan.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,9 +40,11 @@ HEADERS += \
     freqsetting.h \
     qcustomplot.h \
     main.h \
-    rfusetting.h
+    rfusetting.h \
+    zerospan.h
 
 FORMS += \
         mainwindow.ui \
     freqsetting.ui \
-    rfusetting.ui
+    rfusetting.ui \
+    zerospan.ui

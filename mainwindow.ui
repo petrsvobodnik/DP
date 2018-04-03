@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>430</y>
+      <y>530</y>
       <width>91</width>
       <height>51</height>
      </rect>
@@ -44,7 +44,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>400</y>
+      <y>500</y>
       <width>91</width>
       <height>21</height>
      </rect>
@@ -69,8 +69,8 @@
    <widget class="QPushButton" name="PBstartRX">
     <property name="geometry">
      <rect>
-      <x>8</x>
-      <y>330</y>
+      <x>18</x>
+      <y>270</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -82,8 +82,8 @@
    <widget class="QPushButton" name="PBstopRX">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>330</y>
+      <x>100</x>
+      <y>270</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -95,10 +95,10 @@
    <widget class="QCustomPlot" name="fftGraph" native="true">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>210</x>
       <y>49</y>
       <width>681</width>
-      <height>271</height>
+      <height>491</height>
      </rect>
     </property>
     <property name="palette">
@@ -665,7 +665,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>490</y>
+      <y>590</y>
       <width>171</width>
       <height>16</height>
      </rect>
@@ -678,7 +678,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>510</y>
+      <y>610</y>
       <width>171</width>
       <height>16</height>
      </rect>
@@ -766,7 +766,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>370</y>
+      <y>430</y>
       <width>121</width>
       <height>31</height>
      </rect>
@@ -818,14 +818,156 @@
      <string>Saving data</string>
     </property>
    </widget>
-   <widget class="QWidget" name="widget" native="true">
+   <widget class="QLineEdit" name="LEfileName">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>340</y>
-      <width>681</width>
-      <height>261</height>
+      <x>10</x>
+      <y>320</y>
+      <width>191</width>
+      <height>22</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBassignFileName">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>350</y>
+      <width>91</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Assign name</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBchooseDir">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>350</y>
+      <width>91</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Choose dir</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBsaveStop">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>380</y>
+      <width>91</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Stop saving</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBsaveStart">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>380</y>
+      <width>91</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start saving</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelFileExists">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>300</y>
+      <width>141</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="palette">
+     <palette>
+      <active>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>239</red>
+          <green>41</green>
+          <blue>41</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Text">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>239</red>
+          <green>41</green>
+          <blue>41</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </active>
+      <inactive>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>239</red>
+          <green>41</green>
+          <blue>41</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Text">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>239</red>
+          <green>41</green>
+          <blue>41</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </inactive>
+      <disabled>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>190</red>
+          <green>190</green>
+          <blue>190</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Text">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>190</red>
+          <green>190</green>
+          <blue>190</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </disabled>
+     </palette>
+    </property>
+    <property name="text">
+     <string>File already exists!</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBzeroSpan">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>630</y>
+      <width>80</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Zero span</string>
     </property>
    </widget>
   </widget>

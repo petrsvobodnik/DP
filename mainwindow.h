@@ -16,15 +16,16 @@
 // Definiton of default radio parameters
 struct radio_config
 {
-    hackrf_device *radioID;
-    uint32_t LNAgain = 0;
-    uint32_t VGAgain = 0;
+    hackrf_device *radioID; // pointer to radio
+    uint32_t LNAgain = 0;   // hack's internal amplifier
+    uint32_t VGAgain = 0;   // hack's internal amplifier
     uint8_t antPower = false;
-    uint64_t rxFreq = 10*MHz;
-    double sampleRate = 2*MHz;
-    int filterShape = 0;        // 0 - Square, 1 - Hamming, 2 - Hann
+    uint64_t rxFreq = 10*MHz;   // default central frequency
+    double sampleRate = 2*MHz;  // default sample rate
+    int filterShape = 0;        // default FFT filter selector     0 - Square, 1 - Hamming, 2 - Hann
     bool hackrf_connected = false;
-    int pathFilter = 0; // 0 - bypass, 1 - LP, 2 - HP
+    int pathFilter = 0; // hack's internal filter          0 - bypass, 1 - LP, 2 - HP
+    float RFUgain = 0;
 } ;
 
 
@@ -62,10 +63,23 @@ private slots:
 
     void doFFT();
 
+    void on_PBchooseDir_clicked();
+
+    void on_PBassignFileName_clicked();
+
+    void on_PBsaveStart_clicked();
+
+    void on_PBsaveStop_clicked();
+
+    void on_LEfileName_textChanged(const QString &arg1);
+
+    void on_PBzeroSpan_clicked();
+
 private:
     void defineWindow(double[], int );
     void plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder);
     void saveMeasuredData(double FFTdata[]);
+    void saveFrequencies(double []);
 
     Ui::MainWindow *ui;
     freqSetting *freqWindow;
