@@ -105,6 +105,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->PBsaveStart->setDisabled(true);
     ui->PBsaveStop->setDisabled(true);
 
+    ui->label_5->hide();
+    ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
+
 
 //    // Preparation for adding another graph
 //    ui->fftGraph->addGraph();
@@ -203,6 +206,9 @@ void MainWindow::on_PBSampleRate_clicked()
 void MainWindow::on_LEfreq_returnPressed()
 {
     // Set new frequency by pressing Enter
+    ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
+    ui->label_5->hide();
+
     hackConfig.rxFreq = ui->LEfreq->text().toUInt()*1000;
     hackrf_set_freq(hackConfig.radioID, hackConfig.rxFreq);
 }
@@ -226,11 +232,20 @@ void MainWindow::on_LEfreq_textChanged(const QString &arg1)
     }
     else
     {
-        ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
+        if (arg1.toInt() == hackConfig.rxFreq*1000){
+            ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
+            ui->label_5->hide();
+            }
+        else{
+            ui->LEfreq->setStyleSheet("QLineEdit {background-color: rgb(230, 255, 204);}");
+            ui->label_5->setText("Frequency not set yet");
+            ui->label_5->show();
+        }
+
+
         //        LEcolor.setBrush(QPalette::Base, Qt::white);
         if (hackConfig.hackrf_connected)    // check whether radio is connected before enabling the button
             ui->PBsetFreq->setDisabled(false);
-        ui->label_5->hide();
     }
 
 //    ui->LEfreq->setPalette(LEcolor);
@@ -463,13 +478,14 @@ void MainWindow::on_PBassignFileName_clicked()
 {
     QString name = ui->LEfileName->text();
 
-    if(name.contains("csv")){
-       name.truncate(name.lastIndexOf(QChar('/')));
-    }
+    if(name.contains("csv"))
+       saveFileName = name.left(name.lastIndexOf(QChar('/'))) + "/" + QDateTime::currentDateTime().toString("dd-MM-yy") + "_" + QString::number( hackConfig.rxFreq/1000) + "kHz.csv";
+    else
+        saveFileName = ui->LEfileName->text() + "/" + QDateTime::currentDateTime().toString("dd-MM-yy") + "_" + QString::number( hackConfig.rxFreq/1000) + "kHz.csv";
 
-    saveFileName = ui->LEfileName->text() + "/" + QDateTime::currentDateTime().toString("dd-MM-yy") + "_" + QString::number( hackConfig.rxFreq/1000) + "kHz.csv";
+
     ui->LEfileName->setText(saveFileName);
-    if(hackConfig.hackrf_connected)
+    if(hackConfig.hackrf_connected)     // checking whether radio is connected
         ui->PBsaveStart->setDisabled(false);
     saveCounter = 1;
 }
@@ -485,8 +501,13 @@ void MainWindow::on_PBsaveStart_clicked()
 
     QFile fileInput(saveFileName);
 
-    if (fileInput.exists())
-        QMessageBox::warning(this, "waring", "Existing file will be overwritten!");
+    if (fileInput.exists()){
+        QMessageBox::StandardButton reply;
+          reply = QMessageBox::question(this, "Warning", "Existing file will be \n overwritten! Continue?", QMessageBox::Yes|QMessageBox::No);
+          if (reply == QMessageBox::No)
+             return;
+    }
+
 
     if (fileInput.open(QIODevice::WriteOnly)){
         QTextStream textStream (&fileInput);

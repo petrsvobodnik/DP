@@ -26,7 +26,7 @@ zeroSpan::zeroSpan(QWidget *parent) :
     ui->graphWidget->axisRect()->setRangeZoom(Qt::Horizontal);
 
     QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
-    dateTicker->setDateTimeFormat("hh:mm:ss.zzz");
+    dateTicker->setDateTimeFormat("hh:mm:ss");
     ui->graphWidget->xAxis->setTicker(dateTicker);
     ui->graphWidget->yAxis->setRange(-100, -20);
 

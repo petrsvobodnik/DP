@@ -20,7 +20,7 @@ struct radio_config
     uint32_t LNAgain = 0;   // hack's internal amplifier
     uint32_t VGAgain = 0;   // hack's internal amplifier
     uint8_t antPower = false;
-    uint64_t rxFreq = 10*MHz;   // default central frequency
+    uint64_t rxFreq = 10*MHz;   // default central frequency [Hz]
     double sampleRate = 2*MHz;  // default sample rate
     int filterShape = 0;        // default FFT filter selector     0 - Square, 1 - Hamming, 2 - Hann
     bool hackrf_connected = false;
@@ -54,25 +54,15 @@ private slots:
     void on_PBrfuSetting_clicked();
     void on_SBupperRange_valueChanged(int arg1);
 
-    void on_actionSet_up_save_file_triggered();
-    void on_actionStart_saving_triggered();
-    void on_actionStop_saving_triggered();
-
     void on_LEfreq_returnPressed();
     void on_LEfreq_textChanged(const QString &arg1);
 
     void doFFT();
-
     void on_PBchooseDir_clicked();
-
     void on_PBassignFileName_clicked();
-
     void on_PBsaveStart_clicked();
-
     void on_PBsaveStop_clicked();
-
     void on_LEfileName_textChanged(const QString &arg1);
-
     void on_PBzeroSpan_clicked();
 
 private:
@@ -88,7 +78,6 @@ private:
 
 
 public:
-//    static fftwf_complex x[1024];
     QTimer guiRefresh;
     //!!! This is bad. this doesn't have to be atomic!!
     static volatile int data_ready;
