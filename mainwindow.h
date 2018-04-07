@@ -8,6 +8,7 @@
 #include "qcustomplot.h"
 #include "freqsetting.h"
 #include "rfusetting.h"
+#include <srsgui/srsgui.h>
 
 #define MHz 1000000
 #define GHz 1000000000
@@ -25,7 +26,7 @@ struct radio_config
     int filterShape = 0;        // default FFT filter selector     0 - Square, 1 - Hamming, 2 - Hann
     bool hackrf_connected = false;
     int pathFilter = 0; // hack's internal filter          0 - bypass, 1 - LP, 2 - HP
-    float RFUgain = 0;
+    float RFUgain = 0;    
 } ;
 
 
@@ -69,7 +70,8 @@ private:
     void defineWindow(double[], int );
     void plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder);
     void saveMeasuredData(double FFTdata[]);
-    void saveFrequencies(double []);
+    void saveMeasInfo(double []);
+    void setUpNewFile();
 
     Ui::MainWindow *ui;
     freqSetting *freqWindow;

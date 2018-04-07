@@ -21,6 +21,12 @@ private slots:
     
     void on_PBplot_clicked();
 
+    void on_SBupperRange_valueChanged(int arg1);
+
+    void on_SBlowerRange_valueChanged(int arg1);
+
+    void on_CBtime_currentIndexChanged(int index);
+
 private:
     Ui::zeroSpan *ui;
 };

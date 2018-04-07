@@ -24,7 +24,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 LIBS += -lhackrf # tento zkurveny radek se musi vlozit, aby to jelo
 LIBS += /usr/local/lib/libfftw3.a -lfftw3f
+LIBS += -lqwt-qt5
 
+INCLUDEPATH += /usr/include/qwt
 
 SOURCES += \
         main.cpp \

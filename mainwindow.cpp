@@ -21,12 +21,12 @@ float xf [N][2];
 QString saveFileName;
 bool saveEnabled = 0;
 int saveCounter;
+QTime midnight(23, 59, 59, 0);
 
 //!!! This is bad. this doesn't have to be atomic!!
 volatile int data_ready = 0;
 #define REAL 0
 #define IMAG 1
-
 
 // GUI constructor
 MainWindow::MainWindow(QWidget *parent) :
@@ -107,6 +107,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->label_5->hide();
     ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
+    ui->LEfreq->setDisabled(true);
 
 
 //    // Preparation for adding another graph
@@ -141,10 +142,8 @@ void MainWindow::on_PBConnect_clicked()
 
     if(!hackConfig.hackrf_connected){
         if(hackrf_open_by_serial(SN, &hackConfig.radioID)!= HACKRF_SUCCESS) // radio is being identified by its SN
-        {
             QMessageBox::warning(this, "Not connected!", "No HackRF device found");
-            puts("Error opening device");
-        }
+
         else{
             // activation of GUI buttons
             std::cout << "connected to: "<< SN+16 << std::endl;
@@ -157,6 +156,7 @@ void MainWindow::on_PBConnect_clicked()
             ui->actionStart_saving->setDisabled(1);
             ui->actionStop_saving->setDisabled(1);
             ui->PBsaveStart->setDisabled(false);
+            ui->LEfreq->setDisabled(false);
 
             ui->statusBar->showMessage("Connected");
         }
@@ -232,7 +232,7 @@ void MainWindow::on_LEfreq_textChanged(const QString &arg1)
     }
     else
     {
-        if (arg1.toInt() == hackConfig.rxFreq*1000){
+        if (arg1.toUInt() == hackConfig.rxFreq*1000){
             ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
             ui->label_5->hide();
             }
@@ -322,8 +322,8 @@ void MainWindow::doFFT(){
     }
 
     // Planning the fft
-    fftwf_plan plan = fftwf_plan_dft_1d(N,xf,y,FFTW_FORWARD,FFTW_ESTIMATE);
-    fftwf_execute(plan);
+    fftwf_plan FFTplan = fftwf_plan_dft_1d(N,xf,y,FFTW_FORWARD,FFTW_ESTIMATE);
+    fftwf_execute(FFTplan);
     for (int i=0; i<N; i++){
         spectrum[i] = 5*log10(y[i][REAL]*y[i][REAL] + y[i][IMAG]*y[i][IMAG] ) - 100; // computing w/o sqrt and pow
 //        spectrum[i] = (MainWindow::x[i][REAL]);   // plot data in time domain (real component of the signal)
@@ -339,8 +339,13 @@ void MainWindow::doFFT(){
 //    plot(spectrum1, samples, N, 2, true);
 
 // // Saving data
-    if (saveEnabled)
-        saveMeasuredData(spectrum);
+    if (saveEnabled){
+        if  (QTime::currentTime()>midnight){    // at midnight open up new file
+            setUpNewFile();
+        }
+        else
+            saveMeasuredData(spectrum);
+    }
 
 //    //cleaning
 //    fftwf_destroy_plan(plan);
@@ -390,6 +395,7 @@ void MainWindow::on_PBsetWinShape_clicked()
 void MainWindow::on_PBrfuSetting_clicked()
 {
     rfuWindow = new RFUsetting(this);
+    rfuWindow->setWindowTitle("Settings of SDR's parameters");
     rfuWindow->show();
 }
 
@@ -410,65 +416,6 @@ void MainWindow::saveMeasuredData(double FFTdata[]){        // saving data itsel
 }
 
 
-//void MainWindow::on_actionSet_up_save_file_triggered()      // user picks file to save to
-//{
-//    saveFileName = QFileDialog::getSaveFileName(this, "Pick existing file or name a new one", "/home/golem/Downloads", "CSV file (*.csv)");
-//    if(!saveFileName.contains(".csv"))
-//        saveFileName.append(".csv");
-//    saveCounter = 1;
-//    ui->actionStart_saving->setDisabled(0);
-//}
-
-//void MainWindow::on_actionStart_saving_triggered()      // start saving
-//{
-//    // Assuring to not overwrite previous data
-//    if (saveFileName==""){
-//        QMessageBox::warning(this, "No file selected", "You need to choose file for saving again!");
-//        return;
-//    }
-
-//    QFile fileInput(saveFileName);
-
-//    if (fileInput.open(QFile::WriteOnly)){
-//        QTextStream textStream (&fileInput);
-
-//        textStream << "Saved data from: \t" << QDateTime::currentDateTime().toString("dd. MM. yyyy") <<
-//                      "\nCentral frequency: \t" << hackConfig.rxFreq/1000 << "\tkHz\n"<<
-//                      "Span:\t" << hackConfig.sampleRate/1000000 << "\tMHz\n\n";
-//        fileInput.flush();
-//        fileInput.close();
-//    }
-
-//    saveFrequencies(samples);
-
-//    ui->LEfreq->setDisabled(true);
-//    ui->PBsetFreq->setDisabled(true);
-//    ui->actionStop_saving->setDisabled(0);
-//    ui->labelSaving->show();
-
-//    saveEnabled = true;     // allows saving in plot() function
-//}
-
-
-//void MainWindow::on_actionStop_saving_triggered()
-//{
-//    if (saveEnabled){
-//        saveEnabled = false;
-//        ui->LEfreq->setDisabled(0);
-//        ui->PBsetFreq->setDisabled(0);
-//        ui->actionStart_saving->setDisabled(0);
-//        ui->actionStop_saving->setDisabled(1);
-//        ui->labelSaving->hide();
-
-//        QFile fileInput(saveFileName);
-//        fileInput.close();
-//        saveFileName = "";
-
-//        QString info = "Saving succesful\nNo. of records: " + QString::number(saveCounter) + "\nFile size: " + QString::number( fileInput.size()/1023) + "kB";
-//        QMessageBox::information(this,"Saving finished", info);
-//    }
-//}
-
 void MainWindow::on_PBchooseDir_clicked()
 {
     ui->LEfileName->setText(QFileDialog::getExistingDirectory(this, "Choose directory", "/home/golem/Downloads"));
@@ -479,9 +426,9 @@ void MainWindow::on_PBassignFileName_clicked()
     QString name = ui->LEfileName->text();
 
     if(name.contains("csv"))
-       saveFileName = name.left(name.lastIndexOf(QChar('/'))) + "/" + QDateTime::currentDateTime().toString("dd-MM-yy") + "_" + QString::number( hackConfig.rxFreq/1000) + "kHz.csv";
+       saveFileName = name.left(name.lastIndexOf(QChar('/'))+1) + QDateTime::currentDateTime().toString("dd-MM-yy") + "_" + QString::number( hackConfig.rxFreq/uint64_t (1000000)) + "MHz.csv";
     else
-        saveFileName = ui->LEfileName->text() + "/" + QDateTime::currentDateTime().toString("dd-MM-yy") + "_" + QString::number( hackConfig.rxFreq/1000) + "kHz.csv";
+        saveFileName = ui->LEfileName->text() + "/" + QDateTime::currentDateTime().toString("dd-MM-yy") + "_" + QString::number( hackConfig.rxFreq/uint64_t (1000000)) + "MHz.csv";
 
 
     ui->LEfileName->setText(saveFileName);
@@ -508,18 +455,7 @@ void MainWindow::on_PBsaveStart_clicked()
              return;
     }
 
-
-    if (fileInput.open(QIODevice::WriteOnly)){
-        QTextStream textStream (&fileInput);
-
-        textStream << "Saved data from: \t" << QDateTime::currentDateTime().toString("dd. MM. yyyy") <<
-                      "\nCentral frequency: \t" << hackConfig.rxFreq/1000 << "\tkHz\n"<<
-                      "Span:\t" << hackConfig.sampleRate/1000000 << "\tMHz\n\n";
-        fileInput.flush();
-        fileInput.close();
-    }
-
-    saveFrequencies(samples);
+    saveMeasInfo(samples);
 
     ui->LEfreq->setDisabled(true);
     ui->PBsetFreq->setDisabled(true);
@@ -533,13 +469,29 @@ void MainWindow::on_PBsaveStart_clicked()
     saveEnabled = true;     // allows saving in plot() function
 }
 
+void MainWindow::setUpNewFile(){        // function for setting up a new save file at midnight
+    QFile fileInput(saveFileName);
+    fileInput.close();
 
-void MainWindow::saveFrequencies(double freq[])       // write values of saved frequencies
-{
+    QThread::sleep(1);
+    QString name = ui->LEfileName->text();
+    saveFileName = name.left(name.lastIndexOf(QChar('/'))+1) + QDateTime::currentDateTime().toString("dd-MM-yy") + "_" + QString::number( hackConfig.rxFreq/uint64_t (1000000)) + "MHz.csv";
+    // previous line renames current name of file with new date
+    ui->LEfileName->setText(saveFileName);
+
+    saveMeasInfo(samples);
+}
+
+void MainWindow::saveMeasInfo(double freq[]){        // writes information about date, central frequency and span
     QFile fileInput(saveFileName);
 
-    if (fileInput.open(QIODevice::WriteOnly | QIODevice::Append)){
+    if (fileInput.open(QIODevice::WriteOnly)){
         QTextStream textStream (&fileInput);
+
+        textStream << "Saved data from: \t" << QDateTime::currentDateTime().toString("dd. MM. yyyy") <<
+                      "\nCentral frequency: \t" << hackConfig.rxFreq/1000 << "\tkHz\n"<<
+                      "Span:\t" << hackConfig.sampleRate/1000000 << "\tMHz\n\n";
+
         textStream.setRealNumberPrecision(8);
         textStream <<  "Frequency [kHz]\t";
 
@@ -547,8 +499,12 @@ void MainWindow::saveFrequencies(double freq[])       // write values of saved f
             textStream << freq[i]/1000 << "\t";     // saving in kHz
         }
         textStream<< "\n";
+
+
+        fileInput.flush();
     }
 }
+
 
 void MainWindow::on_PBsaveStop_clicked()
 {
@@ -582,5 +538,6 @@ void MainWindow::on_LEfileName_textChanged(const QString &arg1)
 void MainWindow::on_PBzeroSpan_clicked()
 {
     zeroSpan *winZeroSpan = new zeroSpan(this);
+    winZeroSpan->setWindowTitle("Zero Frequency Span");
     winZeroSpan->exec();
 }

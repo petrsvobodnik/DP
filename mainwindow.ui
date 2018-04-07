@@ -98,7 +98,7 @@
       <x>210</x>
       <y>49</y>
       <width>681</width>
-      <height>491</height>
+      <height>331</height>
      </rect>
     </property>
     <property name="palette">
@@ -970,6 +970,16 @@
      <string>Zero span</string>
     </property>
    </widget>
+   <widget class="QwtPlot" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>400</y>
+      <width>681</width>
+      <height>261</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -1021,6 +1031,12 @@
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
    <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QwtPlot</class>
+   <extends>QWidget</extends>
+   <header location="global">qwt_plot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

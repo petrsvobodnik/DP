@@ -10,6 +10,7 @@ int rowOffset = 6, columnOffset = 1;
 
 
 
+
 zeroSpan::zeroSpan(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::zeroSpan)
@@ -29,6 +30,9 @@ zeroSpan::zeroSpan(QWidget *parent) :
     dateTicker->setDateTimeFormat("hh:mm:ss");
     ui->graphWidget->xAxis->setTicker(dateTicker);
     ui->graphWidget->yAxis->setRange(-100, -20);
+    ui->SBlowerRange->setValue(ui->graphWidget->yAxis->range().lower);
+    ui->SBupperRange->setValue(ui->graphWidget->yAxis->range().upper);
+    ui->LEfilePath->setReadOnly(true);
 
 
     ui->SBnoOfSamples->setDisabled(true);
@@ -42,7 +46,9 @@ zeroSpan::~zeroSpan()
 
 void zeroSpan::on_PBload_clicked()
 {
+    QTime timeStart, timeStop, timeLength;
     filename = QFileDialog::getOpenFileName(this, "Choose file with measured data", "/home/golem/Downloads", "CSV file (*.csv)");   // QDir::homePath())
+    ui->LEfilePath->setText(filename);
     QFile file(filename);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
@@ -50,6 +56,7 @@ void zeroSpan::on_PBload_clicked()
             return;
     }
 
+    file.seek(0);
 
     QStringList frequenz;
     QString line, freq, span;
@@ -63,7 +70,6 @@ void zeroSpan::on_PBload_clicked()
             // ui display date
             dateOfMeas = frequenz.at(1);
             ui->labelDate->setText(ui->labelDate->text() + dateOfMeas);
-            qDebug() << frequenz.at(1);
             break;
         case 1:
             // ui display central freq
@@ -92,7 +98,7 @@ void zeroSpan::on_PBload_clicked()
 
     rowTotal = rowCount - rowOffset;
     file.close();
-    // Frequency range
+    // Frequency range ui label
     QString range = QString::number(freq.toInt()-span.toInt()*500) + " - " + QString::number(freq.toInt() + span.toInt()*500) + " kHz";
     ui->labelFreqRange->setText(ui->labelFreqRange->text().append(range));
 
@@ -101,11 +107,26 @@ void zeroSpan::on_PBload_clicked()
     ui->SBnoOfSamples->setValue(rowTotal);
 
     ui->labelNoOfMeas->setText(ui->labelNoOfMeas->text().append(QString::number(rowTotal)));
-    QString duration = ui->CBtime->itemText(0).left(8)+ " - " + ui->CBtime->itemText(rowTotal).left(8);
+
+    QString time1 = ui->CBtime->itemText(0);
+    QString time2 = ui->CBtime->itemText(rowTotal);
+
+    timeStart= QTime::fromString(time1, "hh:mm:ss.zzz");
+    timeStop = QTime::fromString(time2, "hh:mm:ss.zzz");
+    timeLength.setHMS((timeStop.hour()-timeStart.hour()), (timeStop.minute()-timeStart.minute()), (timeStop.second()-timeStart.second()));
+
+    QString duration = timeStart.toString("hh:mm:ss")+ " - " + timeStop.toString("hh:mm:ss");
     ui->labelDuration->setText(ui->labelDuration->text().append(duration));
+
+//    qDebug() << "Start: " << timeStart.toString("hh:mm:ss.zzz") << "\nEnd: " << timeStop.toString("hh:mm:ss.zzz") <<
+//                "\nLength: " << timeLength.toString("hh:mm:ss");
+
+    ui->labelMeasLength->setText(ui->labelMeasLength->text()+timeLength.toString("hh:mm:ss"));
 
 
     ui->PBplot->setDisabled(false);
+    ui->CBfreq->setCurrentIndex(1);
+    on_PBplot_clicked();
     return;
 }
 
@@ -154,4 +175,22 @@ void zeroSpan::on_PBplot_clicked()
 
     ui->graphWidget->replot();
 //    ui->graphWidget->update();
+}
+
+void zeroSpan::on_SBupperRange_valueChanged(int arg1)
+{
+    ui->graphWidget->yAxis->setRangeUpper(arg1);
+    ui->graphWidget->replot();
+}
+
+void zeroSpan::on_SBlowerRange_valueChanged(int arg1)
+{
+    ui->graphWidget->yAxis->setRangeLower(arg1);
+    ui->graphWidget->replot();
+}
+
+void zeroSpan::on_CBtime_currentIndexChanged(int index)
+{
+    ui->SBnoOfSamples->setMaximum(rowTotal-index);
+    ui->SBnoOfSamples->setValue(rowTotal-index);
 }

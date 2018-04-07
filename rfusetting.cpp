@@ -216,7 +216,7 @@ void RFUsetting::on_PBsetpolarisation_clicked()
 }
 
 void RFUsetting::getRotatorState(){
-    int readAngle;
+//    int readAngle;
     port.write("C");
     // osetrit cteni z portu a nastaveni hodnoty do GUI
 //    ui->SBazimuth->setValue(readAngle/1024*360);
