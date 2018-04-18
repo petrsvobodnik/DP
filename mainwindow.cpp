@@ -6,7 +6,7 @@
 #include "qcustomplot.h"
 #include "main.h"
 #include "zerospan.h"
-
+#include "loaddata.h"
 
 int data_cb(hackrf_transfer*);
 
@@ -14,7 +14,6 @@ radio_config hackConfig;
 const int N = 1024;
 volatile int MainWindow::data_ready = 0;
 double spectrum [N];
-double spectrum1 [N];
 double samples [N];
 double fftFiltr [N];
 float xf [N][2];
@@ -22,6 +21,9 @@ QString saveFileName;
 bool saveEnabled = 0;
 int saveCounter;
 QTime midnight(23, 59, 59, 0);
+int WFlen = 100;
+
+QCPColorMap *colorMap = NULL;
 
 //!!! This is bad. this doesn't have to be atomic!!
 volatile int data_ready = 0;
@@ -114,6 +116,20 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->fftGraph->addGraph();
 //    ui->fftGraph->graph(2)->setPen(QPen(Qt::green));
 
+    // waterfall initialization
+    colorMap = new QCPColorMap(ui->waterfall->xAxis, ui->waterfall->yAxis);
+    colorMap->data()->setSize(1024, WFlen);
+
+    QCPColorScale *colorScale = new QCPColorScale(ui->waterfall);
+    ui->waterfall->plotLayout()->addElement(0, 1, colorScale);
+    ui->waterfall->yAxis->setTicks(false);
+    colorScale->setType(QCPAxis::atRight);
+    colorMap->setColorScale(colorScale);
+    colorScale->setGradient(QCPColorGradient::gpSpectrum);
+    colorMap->setDataRange(QCPRange(-100, -60));
+
+
+
     defineWindow(fftFiltr,ui->CBwinShape->currentIndex());
 
     connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(doFFT()));
@@ -165,7 +181,6 @@ void MainWindow::on_PBConnect_clicked()
         MainWindow::data_ready = 0;
     }
 }
-
 
 void MainWindow::on_PBExit_clicked()
 {
@@ -338,6 +353,8 @@ void MainWindow::doFFT(){
     plot(spectrum, samples, N, 0, true);
 //    plot(spectrum1, samples, N, 2, true);
 
+    setWaterfallData();
+
 // // Saving data
     if (saveEnabled){
         if  (QTime::currentTime()>midnight){    // at midnight open up new file
@@ -361,6 +378,34 @@ void MainWindow::doFFT(){
     ui->labelTime->show();
     ui->labelDate->show();
 }
+
+void MainWindow::setWaterfallData()
+{
+
+
+    colorMap->data()->setKeySize(1024);
+    colorMap->data()->setKeyRange(QCPRange((hackConfig.rxFreq - hackConfig.sampleRate/2)/1000, (hackConfig.rxFreq + hackConfig.sampleRate/2)/1000));
+    colorMap->data()->setValueRange(QCPRange(0, colorMap->data()->valueSize()));
+
+        for (int i=0; i<WFlen; i++){               // rows        // adding new data to the top of diagram
+            for (int j=0; j<N; j++){               // columns
+                if( i<(WFlen-1))
+                    colorMap->data()->setCell(j, i, colorMap->data()->cell(j, i+1));
+                else
+                    colorMap->data()->setCell(j, WFlen-1, spectrum[j] + ui->SliderScaling->value());
+
+//                    colorMap->data()->setCell(j, WFlen-i, colorMap->data()->cell(j, WFlen-i-1));
+//                else
+//                    colorMap->data()->setCell(j, 1, spectrum[j]);
+            }
+        }
+
+    ui->waterfall->rescaleAxes();
+    ui->waterfall->replot();
+
+
+}
+
 
 void MainWindow::defineWindow(double fftWindow[], int typ){
     // calculation of windows
@@ -395,7 +440,7 @@ void MainWindow::on_PBsetWinShape_clicked()
 void MainWindow::on_PBrfuSetting_clicked()
 {
     rfuWindow = new RFUsetting(this);
-    rfuWindow->setWindowTitle("Settings of SDR's parameters");
+    rfuWindow->setWindowTitle("Antenna Unit Settings");
     rfuWindow->show();
 }
 
@@ -414,7 +459,6 @@ void MainWindow::saveMeasuredData(double FFTdata[]){        // saving data itsel
     }
     saveCounter++;
 }
-
 
 void MainWindow::on_PBchooseDir_clicked()
 {
@@ -436,7 +480,6 @@ void MainWindow::on_PBassignFileName_clicked()
         ui->PBsaveStart->setDisabled(false);
     saveCounter = 1;
 }
-
 
 void MainWindow::on_PBsaveStart_clicked()
 {
@@ -505,7 +548,6 @@ void MainWindow::saveMeasInfo(double freq[]){        // writes information about
     }
 }
 
-
 void MainWindow::on_PBsaveStop_clicked()
 {
     if (saveEnabled){
@@ -518,16 +560,19 @@ void MainWindow::on_PBsaveStop_clicked()
 
         QFile fileInput(saveFileName);
         fileInput.close();
-        saveFileName = "";
 
-        QString info = "Saving succesful\nNo. of records: " + QString::number(saveCounter) + "\nFile size: " + QString::number( fileInput.size()/1023) + "kB";
+        QString info = "Saving succesful\nFile: " + saveFileName + "\nNo. of records: " + QString::number(saveCounter) + "\nFile size: " + QString::number( fileInput.size()/1023) + "kB";
         QMessageBox::information(this,"Saving finished", info);\
+        saveFileName = "";
     }
 }
 
 void MainWindow::on_LEfileName_textChanged(const QString &arg1)
 {
     QFile fileInput(arg1);
+
+    if(hackConfig.hackrf_connected)     // checking whether radio is connected
+        ui->PBsaveStart->setDisabled(false);
 
     if (fileInput.exists())
         ui->labelFileExists->show();
@@ -540,4 +585,19 @@ void MainWindow::on_PBzeroSpan_clicked()
     zeroSpan *winZeroSpan = new zeroSpan(this);
     winZeroSpan->setWindowTitle("Zero Frequency Span");
     winZeroSpan->exec();
+}
+
+
+void MainWindow::on_PBloadData_clicked()
+{
+    LoadData *dialog5 = new LoadData(this);
+    dialog5->setWindowTitle("Display data from file");
+    dialog5->exec();
+}
+
+void MainWindow::on_SliderColorScale_valueChanged(int value)
+{
+    colorMap->setDataRange(QCPRange(-100, value));
+    ui->waterfall->replot();
+    ui->LEupperWF->setText(QString::number(value));
 }

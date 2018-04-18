@@ -147,6 +147,7 @@ void zeroSpan::on_PBplot_clicked()
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
         qDebug() << "File not opened correctly!";
+        QMessageBox::warning(this, "Error", "File not open!");
         return;
     }
     file.seek(0);

@@ -66,12 +66,18 @@ private slots:
     void on_LEfileName_textChanged(const QString &arg1);
     void on_PBzeroSpan_clicked();
 
+
+    void on_PBloadData_clicked();
+
+    void on_SliderColorScale_valueChanged(int value);
+
 private:
     void defineWindow(double[], int );
     void plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder);
     void saveMeasuredData(double FFTdata[]);
     void saveMeasInfo(double []);
     void setUpNewFile();
+    void setWaterfallData();
 
     Ui::MainWindow *ui;
     freqSetting *freqWindow;

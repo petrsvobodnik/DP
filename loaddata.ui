@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoadData</class>
+ <widget class="QDialog" name="LoadData">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>864</width>
+    <height>568</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QCustomPlot" name="waterfallWidget" native="true">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>60</y>
+     <width>621</width>
+     <height>231</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QCustomPlot" name="graphWidget" native="true">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>300</y>
+     <width>621</width>
+     <height>211</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="LEfilename">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>361</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>60</y>
+     <width>161</width>
+     <height>361</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Measurement info</string>
+   </property>
+   <widget class="QLabel" name="labelDate">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Date: 
+</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelDuration">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>70</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Duration:
+</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelNoOfMeas">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>310</y>
+      <width>111</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>No. of samples:
+</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMeasLength">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>110</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Measurement length
+</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelFrequency">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>150</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Central frequency: 
+</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelFreqRange">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>230</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Frequency range:
+</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelSpan">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>190</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Span:
+</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelFreqRes">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>270</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Frequency resolution:
+</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="PBopenFile">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>10</y>
+     <width>80</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Open file</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="PBplotData">
+   <property name="geometry">
+    <rect>
+     <x>490</x>
+     <y>10</y>
+     <width>80</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Plot data</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="SBsamplesShown">
+   <property name="geometry">
+    <rect>
+     <x>600</x>
+     <y>10</y>
+     <width>47</width>
+     <height>23</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QSlider" name="SliderTime">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>540</y>
+     <width>611</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QSlider" name="SliderColorScale">
+   <property name="geometry">
+    <rect>
+     <x>810</x>
+     <y>69</y>
+     <width>20</width>
+     <height>221</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-90</number>
+   </property>
+   <property name="maximum">
+    <number>0</number>
+   </property>
+   <property name="singleStep">
+    <number>5</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="LEupperWF">
+   <property name="geometry">
+    <rect>
+     <x>810</x>
+     <y>40</y>
+     <width>31</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="LEtime">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>530</y>
+     <width>61</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

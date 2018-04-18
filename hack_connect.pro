@@ -34,7 +34,8 @@ SOURCES += \
     freqsetting.cpp \
     qcustomplot.cpp \
     rfusetting.cpp \
-    zerospan.cpp
+    zerospan.cpp \
+    loaddata.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -43,10 +44,12 @@ HEADERS += \
     qcustomplot.h \
     main.h \
     rfusetting.h \
-    zerospan.h
+    zerospan.h \
+    loaddata.h
 
 FORMS += \
         mainwindow.ui \
     freqsetting.ui \
     rfusetting.ui \
-    zerospan.ui
+    zerospan.ui \
+    loaddata.ui
