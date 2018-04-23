@@ -27,6 +27,10 @@ private slots:
 
     void on_CBtime_currentIndexChanged(int index);
 
+    void on_CBfreq_currentIndexChanged(int index);
+
+    void on_SliderSelectFreq_valueChanged(int value);
+
 private:
     Ui::zeroSpan *ui;
 };

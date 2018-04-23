@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>864</width>
-    <height>568</height>
+    <width>890</width>
+    <height>614</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
      <x>180</x>
      <y>300</y>
      <width>621</width>
-     <height>211</height>
+     <height>251</height>
     </rect>
    </property>
   </widget>
@@ -181,40 +181,20 @@
     <string>Open file</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="PBplotData">
-   <property name="geometry">
-    <rect>
-     <x>490</x>
-     <y>10</y>
-     <width>80</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Plot data</string>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="SBsamplesShown">
-   <property name="geometry">
-    <rect>
-     <x>600</x>
-     <y>10</y>
-     <width>47</width>
-     <height>23</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QSlider" name="SliderTime">
    <property name="geometry">
     <rect>
      <x>180</x>
-     <y>540</y>
+     <y>580</y>
      <width>611</width>
      <height>16</height>
     </rect>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="invertedControls">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QSlider" name="SliderColorScale">
@@ -252,11 +232,75 @@
   <widget class="QLineEdit" name="LEtime">
    <property name="geometry">
     <rect>
-     <x>100</x>
-     <y>530</y>
-     <width>61</width>
+     <x>70</x>
+     <y>580</y>
+     <width>101</width>
      <height>22</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>810</x>
+     <y>360</y>
+     <width>81</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Lower range</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="SBlowerRange">
+   <property name="geometry">
+    <rect>
+     <x>810</x>
+     <y>380</y>
+     <width>61</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-110</number>
+   </property>
+   <property name="maximum">
+    <number>-65</number>
+   </property>
+   <property name="singleStep">
+    <number>5</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>810</x>
+     <y>310</y>
+     <width>81</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Upper range</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="SBupperRange">
+   <property name="geometry">
+    <rect>
+     <x>810</x>
+     <y>330</y>
+     <width>61</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-60</number>
+   </property>
+   <property name="maximum">
+    <number>0</number>
+   </property>
+   <property name="singleStep">
+    <number>5</number>
    </property>
   </widget>
  </widget>

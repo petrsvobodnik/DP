@@ -7,6 +7,7 @@
 
 extern radio_config hackConfig;
 QSerialPort port;
+QTimer readPositionTimer;
 
 RFUsetting::RFUsetting(QWidget *parent) :
     QDialog(parent),
@@ -68,6 +69,8 @@ RFUsetting::RFUsetting(QWidget *parent) :
         ui->CBserialPortAR->addItem("COM2");
         ui->CBserialPortAR->addItem("COM3");
     }
+
+    connect(&readPositionTimer, SIGNAL(timeout()), this, SLOT(getRotatorState()));
 }
 
 RFUsetting::~RFUsetting()
@@ -92,6 +95,7 @@ void RFUsetting::on_PBgetGain_clicked() // SET ALL
 void RFUsetting::on_PBstopRotator_clicked()
 {
     // send command S, pak zjistit stav a obnovit SBazimuth a SBelevation
+    getRotatorState();
 }
 
 
@@ -119,6 +123,7 @@ void RFUsetting::on_PBrotLEFT_pressed()
     // L timerem cyklicky obnovovat hodnotu azimutu
     ui->label_6->show();
     port.write("L");
+    readPositionTimer.start(200);
 }
 
 void RFUsetting::on_PBrotLEFT_released()
@@ -126,7 +131,7 @@ void RFUsetting::on_PBrotLEFT_released()
     // send S
     ui->label_6->hide();
     port.write("S");
-    getRotatorState();
+    readPositionTimer.stop();
 }
 
 void RFUsetting::on_PBrotRIGHT_pressed()
@@ -134,6 +139,7 @@ void RFUsetting::on_PBrotRIGHT_pressed()
     // R
     ui->label_6->show();
     port.write("R");
+    readPositionTimer.start(200);
 }
 
 void RFUsetting::on_PBrotRIGHT_released()
@@ -141,7 +147,7 @@ void RFUsetting::on_PBrotRIGHT_released()
     // send S
     ui->label_6->hide();
     port.write("S");
-    getRotatorState();
+    readPositionTimer.stop();
 }
 
 void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons

@@ -8,12 +8,9 @@ int rowCount = 0, columnCount = 0, rowTotal;
 int rowOffset = 6, columnOffset = 1;
 
 
-
-
-
 zeroSpan::zeroSpan(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::zeroSpan)
+   ui(new Ui::zeroSpan) // constructor
 {
     ui->setupUi(this);
 
@@ -32,11 +29,11 @@ zeroSpan::zeroSpan(QWidget *parent) :
     ui->graphWidget->yAxis->setRange(-100, -20);
     ui->SBlowerRange->setValue(ui->graphWidget->yAxis->range().lower);
     ui->SBupperRange->setValue(ui->graphWidget->yAxis->range().upper);
-    ui->LEfilePath->setReadOnly(true);
-
+    ui->LEfreq->setReadOnly(true);
 
     ui->SBnoOfSamples->setDisabled(true);
     ui->PBplot->setDisabled(true);
+    ui->SliderSelectFreq->setDisabled(true);
 }
 
 zeroSpan::~zeroSpan()
@@ -126,6 +123,9 @@ void zeroSpan::on_PBload_clicked()
 
     ui->PBplot->setDisabled(false);
     ui->CBfreq->setCurrentIndex(1);
+    ui->SliderSelectFreq->setDisabled(false);
+    ui->SliderSelectFreq->setMaximum(ui->CBfreq->count());
+    ui->LEfreq->setReadOnly(true);
     on_PBplot_clicked();
     return;
 }
@@ -195,3 +195,26 @@ void zeroSpan::on_CBtime_currentIndexChanged(int index)
     ui->SBnoOfSamples->setMaximum(rowTotal-index);
     ui->SBnoOfSamples->setValue(rowTotal-index);
 }
+
+void zeroSpan::on_CBfreq_currentIndexChanged(int index)
+{
+    static int x;
+    if (x>0){
+        on_PBplot_clicked();
+        ui->SliderSelectFreq->setValue(index);
+        ui->LEfreq->setText(ui->CBfreq->currentText());
+    }
+    x++;
+}
+
+void zeroSpan::on_SliderSelectFreq_valueChanged(int value)
+{
+    static int x;
+    if (x>0){
+        ui->CBfreq->setCurrentIndex(value);
+        ui->LEfreq->setText(ui->CBfreq->currentText());
+        on_PBplot_clicked();
+    }
+    x++;
+}
+

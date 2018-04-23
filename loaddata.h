@@ -18,12 +18,11 @@ public:
 
 private slots:
     void on_PBopenFile_clicked();
-
     void on_PBplotData_clicked();
-
     void on_SliderColorScale_valueChanged(int value);
-
     void on_SliderTime_valueChanged(int value);
+    void on_SBupperRange_valueChanged(int arg1);
+    void on_SBlowerRange_valueChanged(int arg1);
 
 private:
     Ui::LoadData *ui;

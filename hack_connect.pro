@@ -42,7 +42,6 @@ HEADERS += \
         hackrf.h \
     freqsetting.h \
     qcustomplot.h \
-    main.h \
     rfusetting.h \
     zerospan.h \
     loaddata.h

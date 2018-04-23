@@ -73,7 +73,9 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
     colorScale->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
 
     ui->LEupperWF->setReadOnly(true);
-
+    ui->SliderTime->setDisabled(true);
+    ui->SBlowerRange->setValue(-100);
+    ui->SBupperRange->setValue(-20);
 }
 
 LoadData::~LoadData()
@@ -149,11 +151,7 @@ void LoadData::on_PBopenFile_clicked()
     }
 
     file.close();
-
     rowTotal1 = rowCount1 - rowOffset1;
-    ui->SBsamplesShown->setMaximum(rowTotal1);  // SpinBox displaying total number of measurements
-    ui->SBsamplesShown->setDisabled(false);
-    ui->SBsamplesShown->setValue(rowTotal1);
 
     // Frequency range ui label
     temp = "Frequency range:\n";
@@ -198,11 +196,15 @@ void LoadData::on_PBopenFile_clicked()
     colorMap1->data()->setValueSize(rowTotal1);
     colorMap1->data()->setValueRange(QCPRange(dataTime1.first(), dataTime1.at(rowTotal1)));
 
-    ui->SliderTime->setRange((int) dataTime1.first(), (int) dataTime1.at(rowTotal1));
-
 
     noOfRow = rowTotal1;
-//    ui->SliderTime->setMaximum(noOfRow);
+
+    // allowing the GUI elements
+    ui->SliderTime->setRange(0, noOfRow);
+    ui->SliderTime->setValue(0);
+    ui->LEtime->setText(timeList.at(0));
+    ui->SliderTime->setDisabled(false);
+
     on_PBplotData_clicked();
 }
 
@@ -240,7 +242,6 @@ void LoadData::on_PBplotData_clicked()
 //    Color range manipulation
     colorMap1->rescaleDataRange();
     double range2 =  colorMap1->dataRange().upper;
-    int changedRange = colorMap1->dataRange().lower;
     ui->LEupperWF->setText(QString::number(range2));
     ui->SliderColorScale->setValue(int (range2));
 
@@ -254,13 +255,13 @@ void LoadData::on_PBplotData_clicked()
 
 void LoadData::plotSpectrum(QCPColorMap *map, int idx){
     QVector<double> powValue, freqValue;
-    for (int i=0; i<noOfCol; i++){
-        powValue.append(map->data()->cell(i, idx));     // values
+    for (int i=0; i<noOfCol-2; i++){
+        powValue.append(map->data()->cell(i+1, idx));     // values
         freqValue.append(freqList.at(i).toDouble());    // keys
     }
 
     ui->graphWidget->graph(0)->setData(freqValue, powValue);
-    ui->graphWidget->rescaleAxes();
+    ui->graphWidget->yAxis->setRange(ui->SBlowerRange->value(), ui->SBupperRange->value());
     ui->graphWidget->xAxis->setRange(freqValue.first(), freqValue.last());
     ui->graphWidget->replot();
 
@@ -275,12 +276,19 @@ void LoadData::on_SliderColorScale_valueChanged(int value)
 
 void LoadData::on_SliderTime_valueChanged(int value)
 {
-    double x,y;
-    colorMap1->data()->cellToCoord(1, value, &x, &y);
-    QDateTime time;
-    time.addSecs(int64_t (value));
-//    qDebug() << "x: " << x << "\ny:" << y;
-//    QDateTime::currentDateTime().toString("hh:mm:ss.zzz")
-    qDebug() << time.toString("hh:mm:ss");
-    ui->LEtime->setText(time.toString("hh:mm:ss"));
+    QString label = timeList.at(value);
+    ui->LEtime->setText(label);
+    plotSpectrum(colorMap1, value);
+}
+
+void LoadData::on_SBupperRange_valueChanged(int arg1)
+{
+    ui->graphWidget->yAxis->setRangeUpper(arg1);
+    ui->graphWidget->replot();
+}
+
+void LoadData::on_SBlowerRange_valueChanged(int arg1)
+{
+    ui->graphWidget->yAxis->setRangeLower(arg1);
+    ui->graphWidget->replot();
 }

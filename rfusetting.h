@@ -15,7 +15,6 @@ public:
     explicit RFUsetting(QWidget *parent = 0);
     ~RFUsetting();
 
-    void getRotatorState();
 
 private slots:
     void on_PBok_clicked();
@@ -35,6 +34,7 @@ public slots:
     void RBgroupLEVEL_clicked(int );
     void RBgroupANT_clicked(int );
     void RBgroupFILT_clicked (int);
+    void getRotatorState();
 
 
 private:
