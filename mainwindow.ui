@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>900</width>
-    <height>720</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>530</y>
+      <y>590</y>
       <width>91</width>
       <height>51</height>
      </rect>
@@ -31,7 +31,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>150</y>
+      <y>115</y>
       <width>80</width>
       <height>22</height>
      </rect>
@@ -44,7 +44,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>210</y>
+      <y>175</y>
       <width>91</width>
       <height>21</height>
      </rect>
@@ -70,7 +70,7 @@
     <property name="geometry">
      <rect>
       <x>8</x>
-      <y>180</y>
+      <y>145</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -83,7 +83,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>180</y>
+      <y>145</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -95,10 +95,10 @@
    <widget class="QCustomPlot" name="fftGraph" native="true">
     <property name="geometry">
      <rect>
-      <x>230</x>
+      <x>240</x>
       <y>69</y>
       <width>651</width>
-      <height>311</height>
+      <height>241</height>
      </rect>
     </property>
     <property name="palette">
@@ -521,26 +521,16 @@
     <property name="geometry">
      <rect>
       <x>100</x>
-      <y>260</y>
+      <y>225</y>
       <width>80</width>
       <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="CBfreq">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>10</y>
-      <width>79</width>
-      <height>22</height>
      </rect>
     </property>
    </widget>
    <widget class="QLineEdit" name="LEfreq">
     <property name="geometry">
      <rect>
-      <x>260</x>
+      <x>160</x>
       <y>10</y>
       <width>191</width>
       <height>21</height>
@@ -550,8 +540,8 @@
    <widget class="QPushButton" name="PBsetFreq">
     <property name="geometry">
      <rect>
-      <x>520</x>
-      <y>10</y>
+      <x>320</x>
+      <y>40</y>
       <width>80</width>
       <height>22</height>
      </rect>
@@ -563,7 +553,7 @@
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>260</x>
+      <x>160</x>
       <y>30</y>
       <width>271</width>
       <height>16</height>
@@ -614,7 +604,7 @@
     <property name="geometry">
      <rect>
       <x>802</x>
-      <y>10</y>
+      <y>35</y>
       <width>47</width>
       <height>23</height>
      </rect>
@@ -638,7 +628,7 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>720</x>
+      <x>800</x>
       <y>10</y>
       <width>81</width>
       <height>20</height>
@@ -648,37 +638,11 @@
      <string>Upper range</string>
     </property>
    </widget>
-   <widget class="QLabel" name="labelTime">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>590</y>
-      <width>171</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="labelDate">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>610</y>
-      <width>171</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
-    </property>
-   </widget>
    <widget class="QComboBox" name="CBhackSN">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>125</y>
+      <y>90</y>
       <width>151</width>
       <height>22</height>
      </rect>
@@ -691,7 +655,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>110</y>
+      <y>75</y>
       <width>171</width>
       <height>16</height>
      </rect>
@@ -704,7 +668,7 @@
     <property name="geometry">
      <rect>
       <x>100</x>
-      <y>230</y>
+      <y>195</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -727,7 +691,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>630</y>
+      <y>560</y>
       <width>91</width>
       <height>22</height>
      </rect>
@@ -739,227 +703,18 @@
    <widget class="QCustomPlot" name="waterfall" native="true">
     <property name="geometry">
      <rect>
-      <x>230</x>
-      <y>400</y>
+      <x>290</x>
+      <y>350</y>
       <width>601</width>
       <height>261</height>
      </rect>
     </property>
    </widget>
-   <widget class="QGroupBox" name="GBsaving">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>310</y>
-      <width>211</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Data saving</string>
-    </property>
-    <widget class="QLabel" name="labelSaving">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>130</y>
-       <width>191</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <property name="palette">
-      <palette>
-       <active>
-        <colorrole role="WindowText">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>78</red>
-           <green>154</green>
-           <blue>6</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </active>
-       <inactive>
-        <colorrole role="WindowText">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>78</red>
-           <green>154</green>
-           <blue>6</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </inactive>
-       <disabled>
-        <colorrole role="WindowText">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>190</red>
-           <green>190</green>
-           <blue>190</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </disabled>
-      </palette>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-       <stylestrategy>PreferDefault</stylestrategy>
-      </font>
-     </property>
-     <property name="text">
-      <string>Saving data
-Elapsed time: </string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="PBsaveStart">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>100</y>
-       <width>91</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Start saving</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="PBchooseDir">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>70</y>
-       <width>91</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Choose dir</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="PBassignFileName">
-     <property name="geometry">
-      <rect>
-       <x>110</x>
-       <y>70</y>
-       <width>91</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Assign name</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="LEfileName">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>40</y>
-       <width>191</width>
-       <height>22</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="PBsaveStop">
-     <property name="geometry">
-      <rect>
-       <x>110</x>
-       <y>100</y>
-       <width>91</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Stop saving</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="labelFileExists">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>141</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="palette">
-      <palette>
-       <active>
-        <colorrole role="WindowText">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>239</red>
-           <green>41</green>
-           <blue>41</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Text">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>239</red>
-           <green>41</green>
-           <blue>41</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </active>
-       <inactive>
-        <colorrole role="WindowText">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>239</red>
-           <green>41</green>
-           <blue>41</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Text">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>239</red>
-           <green>41</green>
-           <blue>41</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </inactive>
-       <disabled>
-        <colorrole role="WindowText">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>190</red>
-           <green>190</green>
-           <blue>190</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Text">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>190</red>
-           <green>190</green>
-           <blue>190</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </disabled>
-      </palette>
-     </property>
-     <property name="text">
-      <string>File already exists!</string>
-     </property>
-    </widget>
-   </widget>
    <widget class="QPushButton" name="PBloadData">
     <property name="geometry">
      <rect>
       <x>110</x>
-      <y>630</y>
+      <y>560</y>
       <width>101</width>
       <height>22</height>
      </rect>
@@ -971,8 +726,8 @@ Elapsed time: </string>
    <widget class="QSlider" name="SliderColorScale">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>420</y>
+      <x>260</x>
+      <y>370</y>
       <width>20</width>
       <height>241</height>
      </rect>
@@ -993,8 +748,8 @@ Elapsed time: </string>
    <widget class="QLineEdit" name="LEupperWF">
     <property name="geometry">
      <rect>
-      <x>860</x>
-      <y>390</y>
+      <x>250</x>
+      <y>340</y>
       <width>31</width>
       <height>22</height>
      </rect>
@@ -1003,8 +758,8 @@ Elapsed time: </string>
    <widget class="QSlider" name="SliderScaling">
     <property name="geometry">
      <rect>
-      <x>840</x>
-      <y>410</y>
+      <x>230</x>
+      <y>360</y>
       <width>16</width>
       <height>251</height>
      </rect>
@@ -1046,7 +801,7 @@ Elapsed time: </string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>236</y>
+      <y>201</y>
       <width>91</width>
       <height>16</height>
      </rect>
@@ -1059,7 +814,7 @@ Elapsed time: </string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>265</y>
+      <y>230</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -1072,7 +827,7 @@ Elapsed time: </string>
     <property name="geometry">
      <rect>
       <x>185</x>
-      <y>235</y>
+      <y>200</y>
       <width>41</width>
       <height>16</height>
      </rect>
@@ -1085,7 +840,7 @@ Elapsed time: </string>
     <property name="geometry">
      <rect>
       <x>855</x>
-      <y>15</y>
+      <y>40</y>
       <width>41</width>
       <height>16</height>
      </rect>
@@ -1097,12 +852,445 @@ Elapsed time: </string>
    <widget class="QComboBox" name="CBunits">
     <property name="geometry">
      <rect>
-      <x>450</x>
+      <x>350</x>
       <y>10</y>
       <width>55</width>
       <height>22</height>
      </rect>
     </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="SBfreq">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>10</y>
+      <width>191</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="frame">
+     <bool>false</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="buttonSymbols">
+     <enum>QAbstractSpinBox::PlusMinus</enum>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="bandUsage" native="true">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>310</y>
+      <width>601</width>
+      <height>41</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>260</y>
+      <width>211</width>
+      <height>281</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="tab_Save">
+     <attribute name="title">
+      <string>Data Saving</string>
+     </attribute>
+     <widget class="QLabel" name="labelSaving">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>130</y>
+        <width>191</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>78</red>
+            <green>154</green>
+            <blue>6</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>78</red>
+            <green>154</green>
+            <blue>6</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>190</red>
+            <green>190</green>
+            <blue>190</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <stylestrategy>PreferDefault</stylestrategy>
+       </font>
+      </property>
+      <property name="text">
+       <string>Saving data
+Elapsed time: </string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="PBchooseDir">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>70</y>
+        <width>91</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Choose dir</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="PBsaveStart">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>100</y>
+        <width>91</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Start saving</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelFileExists">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>141</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>239</red>
+            <green>41</green>
+            <blue>41</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Text">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>239</red>
+            <green>41</green>
+            <blue>41</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>239</red>
+            <green>41</green>
+            <blue>41</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Text">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>239</red>
+            <green>41</green>
+            <blue>41</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>190</red>
+            <green>190</green>
+            <blue>190</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Text">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>190</red>
+            <green>190</green>
+            <blue>190</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="text">
+       <string>File already exists!</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="PBassignFileName">
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>70</y>
+        <width>91</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Assign name</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="PBsaveStop">
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>100</y>
+        <width>91</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Stop saving</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="LEfileName">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>191</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_occupancy">
+     <attribute name="title">
+      <string>BW occupancy</string>
+     </attribute>
+     <widget class="QLineEdit" name="LEoccupancy">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>85</y>
+        <width>41</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="SBtreshold">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>25</y>
+        <width>47</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="suffix">
+       <string/>
+      </property>
+      <property name="minimum">
+       <number>-100</number>
+      </property>
+      <property name="maximum">
+       <number>0</number>
+      </property>
+      <property name="singleStep">
+       <number>5</number>
+      </property>
+      <property name="value">
+       <number>-30</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_4">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Treshold</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>30</y>
+        <width>51</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>[dBm]</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>90</y>
+        <width>21</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>[%]</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Occupancy</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBoxLineVisible">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>151</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Show threshold line</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="GBfreqUnits">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>0</y>
+      <width>120</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Frequency Units</string>
+    </property>
+    <widget class="QRadioButton" name="RBghz">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>40</y>
+       <width>51</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>GHz</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">RBgroup_freqUnits</string>
+     </attribute>
+    </widget>
+    <widget class="QRadioButton" name="RBkhz">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>51</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>kHz</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">RBgroup_freqUnits</string>
+     </attribute>
+    </widget>
+    <widget class="QRadioButton" name="RBmhz">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>20</y>
+       <width>51</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>MHz</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">RBgroup_freqUnits</string>
+     </attribute>
+    </widget>
+    <widget class="QRadioButton" name="RBhz">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>51</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Hz</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">RBgroup_freqUnits</string>
+     </attribute>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -1151,4 +1339,7 @@ Elapsed time: </string>
  </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="RBgroup_freqUnits"/>
+ </buttongroups>
 </ui>

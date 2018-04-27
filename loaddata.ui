@@ -27,9 +27,9 @@
    <property name="geometry">
     <rect>
      <x>180</x>
-     <y>300</y>
+     <y>360</y>
      <width>621</width>
-     <height>251</height>
+     <height>211</height>
     </rect>
    </property>
   </widget>
@@ -301,6 +301,119 @@
    </property>
    <property name="singleStep">
     <number>5</number>
+   </property>
+  </widget>
+  <widget class="QCustomPlot" name="bandUsage" native="true">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>290</y>
+     <width>621</width>
+     <height>71</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_9">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>440</y>
+     <width>41</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>[dBm]</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_11">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>500</y>
+     <width>81</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Occupancy</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBoxLineVisible">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>470</y>
+     <width>151</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Show threshold line</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="SBtreshold">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>435</y>
+     <width>47</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="suffix">
+    <string/>
+   </property>
+   <property name="minimum">
+    <number>-100</number>
+   </property>
+   <property name="maximum">
+    <number>0</number>
+   </property>
+   <property name="singleStep">
+    <number>5</number>
+   </property>
+   <property name="value">
+    <number>-30</number>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="LEoccupancy">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>495</y>
+     <width>41</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>440</y>
+     <width>61</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Treshold</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_10">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>500</y>
+     <width>21</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>[%]</string>
    </property>
   </widget>
  </widget>

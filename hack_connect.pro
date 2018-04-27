@@ -52,3 +52,6 @@ FORMS += \
     rfusetting.ui \
     zerospan.ui \
     loaddata.ui
+
+DISTFILES += \
+    ../../Downloads/od rokose/data/BS_FM_0-6GHz.txt

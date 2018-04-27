@@ -26,7 +26,7 @@ struct radio_config
     int filterShape = 0;        // default FFT filter selector     0 - Square, 1 - Hamming, 2 - Hann
     bool hackrf_connected = false;
     int pathFilter = 0; // hack's internal filter          0 - bypass, 1 - LP, 2 - HP
-    float RFUgain = 0;    
+    float RFUgain = 0;    // gain of antenna unit
 } ;
 
 
@@ -67,6 +67,10 @@ private slots:
     void on_CBwinShape_currentIndexChanged(int index);
     void on_CBunits_currentIndexChanged(int index);
     void on_LEfreq_textChanged(const QString &arg1);
+    void on_SBfreq_valueChanged(double arg1);
+    void on_SBtreshold_valueChanged(int);
+
+    void on_checkBoxLineVisible_toggled(bool checked);
 
 private:
     void defineWindow(double[], int );
@@ -75,6 +79,7 @@ private:
     void saveMeasInfo(double []);
     void setUpNewFile();
     void setWaterfallData();
+    void occupancyPlot();
 
     Ui::MainWindow *ui;
     freqSetting *freqWindow;

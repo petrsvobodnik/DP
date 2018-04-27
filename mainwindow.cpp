@@ -20,10 +20,12 @@ QString saveFileName;
 bool saveEnabled = 0;
 int saveCounter;
 QTime midnight(23, 59, 59, 0);
-int WFlen = 100;
-int freqUnits;
+int WFlen = 100;    // number of samples shown in waterfall diagram
+uint64_t freqUnits;
 
 QCPColorMap *colorMap = NULL;
+QCPColorMap *usage = NULL;
+QCPItemLine *tresholdLine = NULL;
 
 //!!! This is bad. this doesn't have to be atomic!!
 volatile int data_ready = 0;
@@ -63,16 +65,12 @@ MainWindow::MainWindow(QWidget *parent) :
     listWindow << "Square" << "Hamming" << "Hann";
     ui->CBwinShape->addItems(listWindow);
 
-    listFreqChoice << "Custom" << "Preset 1" << "Preset 2" << "Preset 3";
-    ui->CBfreq->addItems(listFreqChoice);
+//    listFreqChoice << "Custom" << "Preset 1" << "Preset 2" << "Preset 3";
+//    ui->CBfreq->addItems(listFreqChoice);
 
     listUnits << "Hz" << "kHz" << "MHz" << "GHz";
     ui->CBunits->addItems(listUnits);
     ui->CBunits->setCurrentIndex(2);
-
-
-    ui->LEfreq->setText(QString::number(double(hackConfig.rxFreq)/freqUnits));
-    ui->LEfreq->setAlignment(Qt::AlignRight);
 
 
     // setting buttons to be inactive till Hack is connected
@@ -88,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->graph(0)->setName("FFT diagram");
 
     ui->fftGraph->addGraph(ui->fftGraph->xAxis, ui->fftGraph->yAxis2);
-    ui->fftGraph->graph(1)->setPen(QPen(Qt::red));
+    ui->fftGraph->graph(1)->setPen(QPen(Qt::green));
     ui->fftGraph->graph(1)->setName("Windowing characteristic");
 
     ui->fftGraph->yAxis->setRange(-100,-20);
@@ -98,16 +96,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->xAxis->setLabel("Frequency [" + ui->CBunits->currentText() + "]");
     ui->fftGraph->legend->setVisible(true);
 
-    ui->fftGraph->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables| QCP::iRangeDrag);
+    ui->fftGraph->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
     ui->fftGraph->axisRect()->setRangeDrag(Qt::Horizontal);
     ui->fftGraph->axisRect()->setRangeZoom(Qt::Horizontal);
+
+    tresholdLine = new QCPItemLine(ui->fftGraph);
+    tresholdLine->setVisible(false);
+    tresholdLine->setPen(QPen(Qt::red));
 
     // Y-axis range changing
     ui->SBupperRange->setValue(ui->fftGraph->yAxis->range().upper);
     ui->SBupperRange->setDisabled(true);
 
-    ui->labelDate->hide();
-    ui->labelTime->hide();
     ui->labelSaving->hide();
     ui->labelFileExists->hide();
 
@@ -117,39 +117,65 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->PBsaveStop->setDisabled(true);
 
     ui->label_5->hide();
+    ui->LEfreq->setText(QString::number(double(hackConfig.rxFreq)/freqUnits));
+    ui->LEfreq->setAlignment(Qt::AlignRight);
     ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
     ui->LEfreq->setDisabled(true);
 
-
-//    // Preparation for adding another graph
-//    ui->fftGraph->addGraph();
-//    ui->fftGraph->graph(2)->setPen(QPen(Qt::green));
+    ui->SBfreq->setValue(double(hackConfig.rxFreq)/freqUnits);
+    ui->SBfreq->setDisabled(true);
+    ui->CBunits->setDisabled(true);
+    ui->tabWidget->setDisabled(true);
+    ui->LEoccupancy->setReadOnly(true);
 
     // waterfall initialization
     colorMap = new QCPColorMap(ui->waterfall->xAxis, ui->waterfall->yAxis);
-    colorMap->data()->setSize(1024, WFlen);
-
-//    QCPColorScale *colorScale = new QCPColorScale(ui->waterfall);
-//    ui->waterfall->plotLayout()->addElement(0, 1, colorScale);
+    colorMap->data()->setSize(N, WFlen);        // number of points in plots
     ui->waterfall->yAxis->setTicks(false);
-//    colorScale->setType(QCPAxis::atRight);
-//    colorMap->setColorScale(colorScale);
-//    colorScale->setGradient(QCPColorGradient::gpSpectrum);
+
     colorMap->setGradient(QCPColorGradient::gpSpectrum);
-    colorMap->setDataRange(QCPRange(-100, -60));
+    colorMap->data()->setKeyRange(QCPRange(0, N));
+    colorMap->setDataRange(QCPRange(-100, -60));    // range of values displayed in the map
     ui->waterfall->xAxis->setLabel("Frequency [" + ui->CBunits->currentText() + "]");
 
-    ui->GBsaving->setDisabled(true);
+
+    // Band usage initialization
+    usage = new QCPColorMap(ui->bandUsage->xAxis, ui->bandUsage->yAxis);
+    usage->data()->setKeySize(N);
+    usage->data()->setKeyRange(QCPRange(1, N));
+    usage->data()->setValueSize(2);
+    usage->data()->setValueRange(QCPRange(0, 3));
+    usage->setGradient(QCPColorGradient::gpHot);
+    usage->setInterpolate(false);
+    usage->setTightBoundary(true);
+    usage->setDataRange(QCPRange(0,1));
+    ui->bandUsage->xAxis->setVisible(false);
+    ui->bandUsage->yAxis->setVisible(false);
+    ui->bandUsage->yAxis->setRange(1.5, 2);
+    ui->bandUsage->xAxis->setRange(0, N);
+    ui->bandUsage->replot();
+
+    ui->RBgroup_freqUnits->setId(ui->RBhz, 0);
+    ui->RBgroup_freqUnits->setId(ui->RBkhz, 1);
+    ui->RBgroup_freqUnits->setId(ui->RBmhz, 2);
+    ui->RBgroup_freqUnits->setId(ui->RBghz, 3);
+    ui->RBmhz->setChecked(true);
+    ui->GBfreqUnits->setDisabled(true);
+
+    connect(ui->RBgroup_freqUnits, SIGNAL(buttonClicked(int)),
+            this, SLOT(on_CBunits_currentIndexChanged(int)));
+
+    connect(ui->RBgroup_freqUnits, SIGNAL(buttonClicked(int)),
+            ui->CBunits, SLOT(setCurrentIndex(int)));
+//    connect(ui->CBunits, SIGNAL(currentIndexChanged(int)),
+//            ui->GBfreqUnits, SLOT(setChecked(bool)));
 
 
-
-    this->setMinimumSize(900, 720);
+    this->setMinimumSize(900, 700);
 
     defineWindow(fftFiltr,ui->CBwinShape->currentIndex());
 
     connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(doFFT()));
-//    connect(&unitSelect, SIGNAL(buttonClicked(int)), this, SLOT(on_CBunits_currentIndexChanged(int)));
-//    connect(this, this->resizeEvent();)
 }
 
 // GUI destructor
@@ -188,9 +214,11 @@ void MainWindow::on_PBConnect_clicked()
             ui->actionStop_saving->setDisabled(1);
 //            ui->PBsaveStart->setDisabled(false);
             ui->LEfreq->setDisabled(false);
+            ui->SBfreq->setDisabled(false);
             ui->CBsampleRate->setDisabled(false);
-            ui->GBsaving->setDisabled(false);
-
+            ui->CBunits->setDisabled(false);
+            ui->GBfreqUnits->setDisabled(false);
+            ui->tabWidget->setDisabled(false);
             ui->statusBar->showMessage("Connected");
 
             // making sure to set zero gains of Hack's amplifiers
@@ -329,22 +357,21 @@ void MainWindow::doFFT(){
     fftwf_plan FFTplan = fftwf_plan_dft_1d(N,xf,y,FFTW_FORWARD,FFTW_ESTIMATE);
     fftwf_execute(FFTplan);
     for (int i=0; i<N; i++){
-        spectrum[i] = 5*log10(y[i][REAL]*y[i][REAL] + y[i][IMAG]*y[i][IMAG] ) - 100; // computing w/o sqrt and pow
-//        spectrum[i] = (MainWindow::x[i][REAL]);   // plot data in time domain (real component of the signal)
-//        spectrum1[i] = (MainWindow::x[i][IMAG]);  // plot data in time domain (imag component of the signal)
-
+        spectrum[i] = 5*log10(y[i][REAL]*y[i][REAL] + y[i][IMAG]*y[i][IMAG] ) + hackConfig.RFUgain- 100; // computing w/o sqrt and pow
+        // (-100) je dummy hodnota, aby se to tvarilo, ze to odpovida
+        //  hackConfig.RFUgain is the total gain of RFU unit - in default 0dB
         samples[i] = (hackConfig.rxFreq - hackConfig.sampleRate/2 + (hackConfig.sampleRate/N)*i)/freqUnits;  // Assign frequency to FFT data
     }
 
 
-// // plotting graphs
+    // // plotting graphs
     plot(fftFiltr, samples, N, 1, false);
     plot(spectrum, samples, N, 0, true);
-//    plot(spectrum1, samples, N, 2, true);
 
-    setWaterfallData();
+    setWaterfallData();     // plot waterfall
+    occupancyPlot();        // plot occupancy bar
 
-// // Saving data
+    // Saving data
     if (saveEnabled){
         if  (QTime::currentTime()>midnight){    // at midnight open up new file
             setUpNewFile();
@@ -353,47 +380,34 @@ void MainWindow::doFFT(){
             saveMeasuredData(spectrum);
     }
 
-//    //cleaning
-//    fftwf_destroy_plan(plan);
-//    fftwf_cleanup();
 
     MainWindow::data_ready = 0;
 
     a++;
     s.asprintf("%d",a);
     ui->label_2->setText(s);
-    ui->labelTime->setText("Current time: "+QDateTime::currentDateTime().toString("hh:mm:ss"));
-    ui->labelDate->setText("Current date: "+QDateTime::currentDateTime().toString("dd.MM.yy"));
-    ui->labelTime->show();
-    ui->labelDate->show();
 }
 
 void MainWindow::setWaterfallData()
 {
-
-
-    colorMap->data()->setKeySize(N);
     colorMap->data()->setKeyRange(QCPRange((hackConfig.rxFreq - hackConfig.sampleRate/2)/freqUnits, (hackConfig.rxFreq + hackConfig.sampleRate/2)/freqUnits));
     colorMap->data()->setValueRange(QCPRange(0, colorMap->data()->valueSize()));
 
         for (int i=0; i<WFlen; i++){               // rows        // adding new data to the top of diagram
             for (int j=0; j<N; j++){               // columns
+
                 if( i<(WFlen-1))    // shift existing data
                      colorMap->data()->setCell(j, i, colorMap->data()->cell(j, i+1));
-
                 else        // Add new data
                 {
-//                    ui->SliderScaling ensures range change in waterfall diagram by adding a value
-//                    colorMap->data()->setCell(j, WFlen-1, spectrum[j] + ui->SliderScaling->value());  // original code
-
-
+                //    adding ui->SliderScaling->value ensures color offset in waterfall diagram
                     if (j<N/2)     // switching the left and right half of WF diagram, so center frequency is in the middle
                         colorMap->data()->setCell(j+N/2, WFlen-1, spectrum[j] + ui->SliderScaling->value());
                     else
                         colorMap->data()->setCell(j-N/2, WFlen-1, spectrum[j] + ui->SliderScaling->value());
                 }
 
-                // Code for shifting WF diagram up (instead of down)
+                // Code for shifting WF diagram from bottom up (instead of down)
 //                    colorMap->data()->setCell(j, WFlen-i, colorMap->data()->cell(j, WFlen-i-1));
 //                else
 //                    colorMap->data()->setCell(j, 1, spectrum[j]);
@@ -434,6 +448,29 @@ void MainWindow::on_PBrfuSetting_clicked()
     rfuWindow = new RFUsetting(this);
     rfuWindow->setWindowTitle("Antenna Unit Settings");
     rfuWindow->show();
+}
+
+void MainWindow::saveMeasInfo(double freq[]){        // writes information about date, central frequency and span
+    QFile fileInput(saveFileName);
+
+    if (fileInput.open(QIODevice::WriteOnly)){
+        QTextStream textStream (&fileInput);
+
+        textStream << "Saved data from: \t" << QDateTime::currentDateTime().toString("dd. MM. yyyy") <<
+                      "\nCentral frequency: \t" << hackConfig.rxFreq/1000 << "\tkHz\n"<<
+                      "Span:\t" << hackConfig.sampleRate/1000000 << "\tMHz\n\n";
+
+        textStream.setRealNumberPrecision(8);
+        textStream <<  "Frequency [kHz]\t";
+
+        for (int i=0; i<1023; i++){     // missing one component as max count of csv columns is 1024!!!
+            textStream << freq[i]*freqUnits/1000 << "\t";     // saving in kHz
+        }
+        textStream<< "\n";
+
+
+        fileInput.flush();
+    }
 }
 
 void MainWindow::saveMeasuredData(double FFTdata[]){        // saving data itself
@@ -517,29 +554,6 @@ void MainWindow::setUpNewFile(){        // function for setting up a new save fi
     saveMeasInfo(samples);
 }
 
-void MainWindow::saveMeasInfo(double freq[]){        // writes information about date, central frequency and span
-    QFile fileInput(saveFileName);
-
-    if (fileInput.open(QIODevice::WriteOnly)){
-        QTextStream textStream (&fileInput);
-
-        textStream << "Saved data from: \t" << QDateTime::currentDateTime().toString("dd. MM. yyyy") <<
-                      "\nCentral frequency: \t" << hackConfig.rxFreq/1000 << "\tkHz\n"<<
-                      "Span:\t" << hackConfig.sampleRate/1000000 << "\tMHz\n\n";
-
-        textStream.setRealNumberPrecision(8);
-        textStream <<  "Frequency [kHz]\t";
-
-        for (int i=0; i<1023; i++){     // missing one component as max count of csv columns is 1024!!!
-            textStream << freq[i]/1000 << "\t";     // saving in kHz
-        }
-        textStream<< "\n";
-
-
-        fileInput.flush();
-    }
-}
-
 void MainWindow::on_PBsaveStop_clicked()
 {
     if (saveEnabled){
@@ -584,7 +598,7 @@ void MainWindow::on_PBloadData_clicked()
     dialog5->exec();
 }
 
-void MainWindow::on_SliderColorScale_valueChanged(int value)
+void MainWindow::on_SliderColorScale_valueChanged(int value)    // changing range of the color map
 {
     colorMap->setDataRange(QCPRange(-100, value));
     ui->waterfall->replot();
@@ -608,36 +622,52 @@ void MainWindow::on_CBwinShape_currentIndexChanged(int index)   // applying corr
 
 void MainWindow::on_CBunits_currentIndexChanged(int index)  // setting frequency units to accept kHz, MHz, GHz
 {
+    double upper, lower;
+
     switch (index) {
     case 0:
         freqUnits = 1;
+        lower =1e6; //+hackConfig.sampleRate/(2*freqUnits);
+        upper =6e9; //-hackConfig.sampleRate/(2*freqUnits);
+        ui->SBfreq->setRange(lower, upper);
         break;
 
     case 1:
+//        freqUnits = 1000;
         freqUnits = 1e3;
+        lower = 1e3; //+hackConfig.sampleRate/(2*freqUnits);
+        upper = 6e6; //-hackConfig.sampleRate/(2*freqUnits);
+        ui->SBfreq->setRange(lower, upper);
         break;
 
     case 2:
+//        freqUnits = 1000000;
         freqUnits = 1e6;
+        lower =1; //+hackConfig.sampleRate/(2*freqUnits);
+        upper =6e3; //-hackConfig.sampleRate/(2*freqUnits);
+        ui->SBfreq->setRange(lower, upper);
         break;
 
     case 3:
+//        freqUnits = 1000000000;
         freqUnits = 1e9;
+        lower =1e-3; //+hackConfig.sampleRate/(2*freqUnits);
+        upper = 6; //-hackConfig.sampleRate/(2*freqUnits);
+        ui->SBfreq->setRange(lower, upper);
         break;
     default:
         break;
     }
 
+    double newFreq = hackConfig.rxFreq/freqUnits;
+    ui->SBfreq->setValue(newFreq);
+    qDebug() << "Rx freq:\t"<< hackConfig.rxFreq << " freqUnits:\t" << freqUnits;
+    qDebug() << "lower "<< lower<< "\tUpper "<< upper<< "\tnew rx freq " <<newFreq;
+
     ui->fftGraph->xAxis->setLabel("Frequency ["+ui->CBunits->currentText() + "]");
     ui->fftGraph->replot();
     ui->waterfall->xAxis->setLabel("Frequency ["+ui->CBunits->currentText() + "]");
     ui->waterfall->replot();
-
-    // If units are GHz, allow LEfreq to display double
-    if (index == 3)
-        ui->LEfreq->setText(QString::number(double(hackConfig.rxFreq)/freqUnits, 'f', 3));
-    else
-        ui->LEfreq->setText(QString::number(hackConfig.rxFreq/freqUnits));
 }
 
 void MainWindow::on_LEfreq_textChanged(const QString &arg1)
@@ -665,4 +695,51 @@ void MainWindow::on_LEfreq_textChanged(const QString &arg1)
         if (hackConfig.hackrf_connected)    // check whether radio is connected before enabling the button
             ui->PBsetFreq->setDisabled(false);
     }
+}
+
+void MainWindow::on_SBfreq_valueChanged(double arg1)
+{
+    if (hackConfig.hackrf_connected){   // checking whether radio is connected
+        hackConfig.rxFreq = uint64_t(arg1*freqUnits);
+        hackrf_set_freq(hackConfig.radioID, hackConfig.rxFreq);
+
+        ui->LEfreq->setText(QString::number(arg1));
+    }
+}
+
+void MainWindow::occupancyPlot(){
+    int busy = 0;                   // counter of occupied freqs
+    for (int i=0; i<N/2; i++){        // data need to be swapped before plotting
+        if (spectrum[i] > ui->SBtreshold->value()){
+            usage->data()->setCell(N/2+i, 1, 0);
+            busy++;
+        }
+        else
+            usage->data()->setCell(N/2+i, 1, 1);
+
+        if (spectrum[i+N/2]> ui->SBtreshold->value()){
+            usage->data()->setCell(i, 1, 0);
+            busy++;
+        }
+        else
+            usage->data()->setCell(i, 1, 1);
+    }
+
+    tresholdLine->start->setCoords(samples[1], ui->SBtreshold->value());
+    tresholdLine->end->setCoords(samples[N-1], ui->SBtreshold->value());
+
+    ui->LEoccupancy->setText(QString::number(double (100*busy)/N, 'f', 1));
+    ui->bandUsage->replot();
+}
+
+// replot and recalculate occupancy with treshold's change
+void MainWindow::on_SBtreshold_valueChanged(int)
+{
+    occupancyPlot();
+}
+
+void MainWindow::on_checkBoxLineVisible_toggled(bool checked)
+{
+    tresholdLine->setVisible(checked);
+    ui->fftGraph->replot();
 }

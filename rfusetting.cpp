@@ -81,20 +81,26 @@ RFUsetting::~RFUsetting()
 
 void RFUsetting::on_PBok_clicked()
 {
-    hackConfig.RFUgain = ui->LEtotalGain->text().toFloat();
+    if (hackConfig.RFUgain != ui->LEtotalGain->text().toFloat()){
+        QMessageBox::information(this, "Parameters set", "Last change of antenna unit was set");
+        on_PBgetGain_clicked();     // calling the function for changing of unit's settings
+    }
+
+
     qDebug() << "RFU's gain is: " << hackConfig.RFUgain;
     this->close();
 }
 
 void RFUsetting::on_PBgetGain_clicked() // SET ALL
 {
+    hackConfig.RFUgain = ui->LEtotalGain->text().toFloat();
 //    This  button will set  RF unit -- will send commands to microcontroller
 
 }
 
 void RFUsetting::on_PBstopRotator_clicked()
 {
-    // send command S, pak zjistit stav a obnovit SBazimuth a SBelevation
+    // send command S, pak zjistit stav a obnovit SBazimuth
     getRotatorState();
 }
 
