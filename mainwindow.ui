@@ -530,79 +530,6 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="LEfreq">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>10</y>
-      <width>191</width>
-      <height>21</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="PBsetFreq">
-    <property name="geometry">
-     <rect>
-      <x>320</x>
-      <y>40</y>
-      <width>80</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Set Freq</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>30</y>
-      <width>271</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="palette">
-     <palette>
-      <active>
-       <colorrole role="ButtonText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>204</red>
-          <green>0</green>
-          <blue>0</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </active>
-      <inactive>
-       <colorrole role="ButtonText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>204</red>
-          <green>0</green>
-          <blue>0</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </inactive>
-      <disabled>
-       <colorrole role="ButtonText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>190</red>
-          <green>190</green>
-          <blue>190</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </disabled>
-     </palette>
-    </property>
-    <property name="text">
-     <string>Frequency range warning</string>
-    </property>
-   </widget>
    <widget class="QSpinBox" name="SBupperRange">
     <property name="geometry">
      <rect>
@@ -842,20 +769,10 @@
      <string>dBm</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="CBunits">
-    <property name="geometry">
-     <rect>
-      <x>350</x>
-      <y>10</y>
-      <width>55</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QDoubleSpinBox" name="SBfreq">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>240</x>
       <y>20</y>
       <width>191</width>
       <height>31</height>
@@ -873,7 +790,7 @@
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
     <property name="buttonSymbols">
-     <enum>QAbstractSpinBox::PlusMinus</enum>
+     <enum>QAbstractSpinBox::UpDownArrows</enum>
     </property>
    </widget>
    <widget class="QCustomPlot" name="bandUsage" native="true">
@@ -1233,7 +1150,7 @@ Started at: </string>
    <widget class="QGroupBox" name="GBfreqUnits">
     <property name="geometry">
      <rect>
-      <x>640</x>
+      <x>450</x>
       <y>0</y>
       <width>120</width>
       <height>61</height>
@@ -1310,7 +1227,7 @@ Started at: </string>
    <widget class="QLabel" name="label_12">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>240</x>
       <y>0</y>
       <width>81</width>
       <height>16</height>

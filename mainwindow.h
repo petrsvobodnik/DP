@@ -49,10 +49,8 @@ private slots:
     void on_PBExit_clicked();
     void on_PBConnect_clicked();
     void on_PBfftSettings_clicked();
-    void on_PBsetFreq_clicked();
     void on_PBrfuSetting_clicked();
     void on_SBupperRange_valueChanged(int arg1);
-    void on_LEfreq_returnPressed();
 
     void doFFT();
     void on_PBchooseDir_clicked();
@@ -65,11 +63,8 @@ private slots:
     void on_SliderColorScale_valueChanged(int value);
     void on_CBsampleRate_currentIndexChanged(const QString &arg1);
     void on_CBwinShape_currentIndexChanged(int index);
-    void on_CBunits_currentIndexChanged(int index);
-    void on_LEfreq_textChanged(const QString &arg1);
     void on_SBfreq_valueChanged(double arg1);
     void on_SBtreshold_valueChanged(int);
-
     void on_checkBoxLineVisible_toggled(bool checked);
 
 private:
@@ -93,6 +88,8 @@ public:
     static volatile int data_ready;
 
 
+public slots:
+    void RBunits_changed(int index);
 };
 
 #endif // MAINWINDOW_H

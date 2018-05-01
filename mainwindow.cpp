@@ -66,17 +66,11 @@ MainWindow::MainWindow(QWidget *parent) :
     listWindow << "Square" << "Hamming" << "Hann";
     ui->CBwinShape->addItems(listWindow);
 
-    listUnits << "Hz" << "kHz" << "MHz" << "GHz";
-    ui->CBunits->addItems(listUnits);
-    ui->CBunits->setCurrentIndex(2);
-
 
     // setting buttons to be inactive till Hack is connected
     ui->PBstartRX->setDisabled(true);
     ui->PBstopRX->setDisabled(true);
-    ui->PBsetFreq->setDisabled(true);
     ui->PBsaveStart->setDisabled(true);
-
 
     // graph constructors
     ui->fftGraph->addGraph();
@@ -92,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->yAxis2->setRange(0,1);
     ui->fftGraph->yAxis2->setVisible(false);
 
-    ui->fftGraph->xAxis->setLabel("Frequency [" + ui->CBunits->currentText() + "]");
+
     ui->fftGraph->legend->setVisible(true);
 
     tresholdLine = new QCPItemLine(ui->fftGraph);
@@ -111,15 +105,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->PBsaveStart->setDisabled(true);
     ui->PBsaveStop->setDisabled(true);
 
-    ui->label_5->hide();
-    ui->LEfreq->setText(QString::number(double(hackConfig.rxFreq)/freqUnits));
-    ui->LEfreq->setAlignment(Qt::AlignRight);
-    ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
-    ui->LEfreq->setDisabled(true);
 
     ui->SBfreq->setValue(double(hackConfig.rxFreq)/freqUnits);
     ui->SBfreq->setDisabled(true);
-    ui->CBunits->setDisabled(true);
     ui->tabWidget->setDisabled(true);
     ui->LEoccupancy->setReadOnly(true);
 
@@ -131,7 +119,6 @@ MainWindow::MainWindow(QWidget *parent) :
     colorMap->setGradient(QCPColorGradient::gpSpectrum);
     colorMap->data()->setKeyRange(QCPRange(0, N));
     colorMap->setDataRange(QCPRange(-100, -60));    // range of values displayed in the map
-    ui->waterfall->xAxis->setLabel("Frequency [" + ui->CBunits->currentText() + "]");
 
 
     // Band usage initialization
@@ -154,16 +141,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->RBgroup_freqUnits->setId(ui->RBkhz, 1);
     ui->RBgroup_freqUnits->setId(ui->RBmhz, 2);
     ui->RBgroup_freqUnits->setId(ui->RBghz, 3);
+
+    connect(ui->RBgroup_freqUnits, SIGNAL(buttonClicked(int)),
+            this, SLOT(RBunits_changed(int)));
     ui->RBmhz->setChecked(true);
     ui->GBfreqUnits->setDisabled(true);
 
-    connect(ui->RBgroup_freqUnits, SIGNAL(buttonClicked(int)),
-            this, SLOT(on_CBunits_currentIndexChanged(int)));
+    ui->waterfall->xAxis->setLabel("Frequency [" + ui->RBgroup_freqUnits->checkedButton()->text() + "]");
+    ui->fftGraph->xAxis->setLabel("Frequency [" + ui->RBgroup_freqUnits->checkedButton()->text() + "]");
+    ui->SBfreq->setValue(double(hackConfig.rxFreq)/freqUnits);
 
-    connect(ui->RBgroup_freqUnits, SIGNAL(buttonClicked(int)),
-            ui->CBunits, SLOT(setCurrentIndex(int)));
-//    connect(ui->CBunits, SIGNAL(currentIndexChanged(int)),
-//            ui->GBfreqUnits, SLOT(setChecked(bool)));
 
 
     this->setMinimumSize(900, 700);
@@ -205,19 +192,15 @@ void MainWindow::on_PBConnect_clicked()
             // activation of GUI buttons
             std::cout << "connected to: "<< SN+16 << std::endl;
             ui->PBstartRX->setDisabled(false);
-            ui->PBsetFreq->setDisabled(false);
             ui->SBupperRange->setDisabled(false);
             ui->PBConnect->setText("Connected");
-            ui->actionStart_saving->setDisabled(1);
-            ui->actionStop_saving->setDisabled(1);
-//            ui->PBsaveStart->setDisabled(false);
-            ui->LEfreq->setDisabled(false);
             ui->SBfreq->setDisabled(false);
-            ui->CBsampleRate->setDisabled(false);
-            ui->CBunits->setDisabled(false);
             ui->GBfreqUnits->setDisabled(false);
             ui->tabWidget->setDisabled(false);
+            ui->CBsampleRate->setDisabled(false);
             ui->statusBar->showMessage("Connected");
+            ui->RBmhz->setChecked(true);
+            RBunits_changed(2);
 
             // making sure to set zero gains of Hack's amplifiers
             hackrf_set_vga_gain(hackConfig.radioID, 0);
@@ -272,25 +255,15 @@ void MainWindow::on_PBstopRX_clicked()
     ui->fftGraph->axisRect()->setRangeZoom(Qt::Horizontal);
 }
 
-void MainWindow::on_LEfreq_returnPressed()
-{
-    // Set new frequency by pressing Enter
-    ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
-    ui->label_5->hide();
 
-    if (ui->LEfreq->text().isEmpty()){  // checking whether user entered a value
-        ui->label_5->setText("No value set");
-        ui->label_5->show();
-    }
-    else{
-        hackConfig.rxFreq = ui->LEfreq->text().toUInt()*freqUnits;
+
+void MainWindow::on_SBfreq_valueChanged(double arg1)
+{
+    if (hackConfig.hackrf_connected){   // checking whether radio is connected
+        hackConfig.rxFreq = uint64_t(arg1*freqUnits);
         hackrf_set_freq(hackConfig.radioID, hackConfig.rxFreq);
-    }
-}
 
-void MainWindow::on_PBsetFreq_clicked()
-{
-   on_LEfreq_returnPressed();
+    }
 }
 
 void MainWindow::on_SBupperRange_valueChanged(int arg1)
@@ -427,12 +400,8 @@ void MainWindow::setWaterfallData()
         }
 
     ui->waterfall->rescaleAxes();
-//    ui->waterfall->yAxis->setRangeUpper(ui->SBupperRange->value());
-//    colorMap->setDataRange();
     on_SliderColorScale_valueChanged(ui->SBupperWF->value());
     ui->waterfall->replot();
-//    ui->SBupperWF->setValue(int (ui->waterfall->yAxis->range().upper));
-
 }
 
 void MainWindow::defineWindow(double fftWindow[], int typ){
@@ -546,9 +515,7 @@ void MainWindow::on_PBsaveStart_clicked()
 
     saveMeasInfo(samples);
 
-    ui->LEfreq->setDisabled(true);
     ui->SBfreq->setDisabled(true);
-    ui->PBsetFreq->setDisabled(true);
     ui->PBsaveStop->setDisabled(false);
     ui->PBsaveStart->setDisabled(true);
     ui->PBassignFileName->setDisabled(true);
@@ -580,7 +547,6 @@ void MainWindow::on_PBsaveStop_clicked()
     if (saveEnabled){
         saveEnabled = false;
         ui->SBfreq->setDisabled(false);
-        ui->PBsetFreq->setDisabled(false);
         ui->PBsaveStart->setDisabled(false);
         ui->GBfreqUnits->setDisabled(false);
         ui->PBsaveStop->setDisabled(true);
@@ -645,8 +611,7 @@ void MainWindow::on_CBwinShape_currentIndexChanged(int index)   // applying corr
     defineWindow(fftFiltr, hackConfig.filterShape);
 }
 
-void MainWindow::on_CBunits_currentIndexChanged(int index)  // setting frequency units to accept kHz, MHz, GHz
-{
+void MainWindow::RBunits_changed(int index){
     double upper, lower;
 
     switch (index) {
@@ -689,48 +654,13 @@ void MainWindow::on_CBunits_currentIndexChanged(int index)  // setting frequency
     qDebug() << "Rx freq:\t"<< hackConfig.rxFreq << " freqUnits:\t" << freqUnits;
     qDebug() << "lower "<< lower<< "\tUpper "<< upper<< "\tnew rx freq " <<newFreq;
 
-    ui->fftGraph->xAxis->setLabel("Frequency ["+ui->CBunits->currentText() + "]");
+    ui->fftGraph->xAxis->setLabel("Frequency ["+ui->RBgroup_freqUnits->checkedButton()->text() + "]");
     ui->fftGraph->replot();
-    ui->waterfall->xAxis->setLabel("Frequency ["+ui->CBunits->currentText() + "]");
+    ui->waterfall->xAxis->setLabel("Frequency ["+ui->RBgroup_freqUnits->checkedButton()->text() + "]");
     ui->waterfall->replot();
 }
 
-void MainWindow::on_LEfreq_textChanged(const QString &arg1)
-{
-    // Treating frequency out of range values
 
-    if ((arg1.toDouble()*freqUnits < 1000000) | (arg1.toDouble()*freqUnits > 6000000000)){
-        ui->LEfreq->setStyleSheet("QLineEdit {background-color: rgb(255, 117, 117);}");     // Line edit turns red
-        ui->PBsetFreq->setDisabled(true);
-        ui->label_5->setText("Frequency has to be in range of 1MHz - 6GHz");
-        ui->label_5->show();
-    }
-    else
-    {
-        if ( uint64_t(arg1.toDouble()*freqUnits) == hackConfig.rxFreq){  // puvodni argument 1: arg1.toUInt()
-            ui->LEfreq->setStyleSheet("QLineEdit {background-color: white;}");
-            ui->label_5->hide();
-            }
-        else{
-            ui->LEfreq->setStyleSheet("QLineEdit {background-color: rgb(230, 255, 204);}");
-            ui->label_5->setText("Frequency not set yet");
-            ui->label_5->show();
-        }
-
-        if (hackConfig.hackrf_connected)    // check whether radio is connected before enabling the button
-            ui->PBsetFreq->setDisabled(false);
-    }
-}
-
-void MainWindow::on_SBfreq_valueChanged(double arg1)
-{
-    if (hackConfig.hackrf_connected){   // checking whether radio is connected
-        hackConfig.rxFreq = uint64_t(arg1*freqUnits);
-        hackrf_set_freq(hackConfig.radioID, hackConfig.rxFreq);
-
-        ui->LEfreq->setText(QString::number(arg1));
-    }
-}
 
 void MainWindow::occupancyPlot(){
     int busy = 0;                   // counter of occupied freqs
