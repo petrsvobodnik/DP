@@ -21,7 +21,7 @@ bool saveEnabled = 0;
 int saveCounter;
 QTime midnight(23, 59, 59, 0);
 int WFlen = 100;    // number of samples shown in waterfall diagram
-uint64_t freqUnits;
+uint64_t freqUnits = 1e6;
 
 QCPColorMap *colorMap = NULL;
 QCPColorMap *usage = NULL;
@@ -256,7 +256,6 @@ void MainWindow::on_PBstopRX_clicked()
 }
 
 
-
 void MainWindow::on_SBfreq_valueChanged(double arg1)
 {
     if (hackConfig.hackrf_connected){   // checking whether radio is connected
@@ -265,6 +264,7 @@ void MainWindow::on_SBfreq_valueChanged(double arg1)
 
     }
 }
+
 
 void MainWindow::on_SBupperRange_valueChanged(int arg1)
 {
@@ -601,8 +601,11 @@ void MainWindow::on_CBsampleRate_currentIndexChanged(const QString &arg1)
         hackrf_set_sample_rate(hackConfig.radioID, hackConfig.sampleRate);
         double res = arg1.toDouble()/0.001024;
         ui->labelFreqRes->setText("Freq. resolution: " + QString::number(res) + "Hz");
+
+        RBunits_changed(ui->RBgroup_freqUnits->checkedId());
     }
 }
+
 
 void MainWindow::on_CBwinShape_currentIndexChanged(int index)   // applying correct FFT filter
 {
@@ -614,45 +617,46 @@ void MainWindow::on_CBwinShape_currentIndexChanged(int index)   // applying corr
 void MainWindow::RBunits_changed(int index){
     double upper, lower;
 
+    ui->SBfreq->setMinimum(0);
+    ui->SBfreq->setMaximum(7e9);
+
     switch (index) {
     case 0:
         freqUnits = 1;
-        lower =1e6; //+hackConfig.sampleRate/(2*freqUnits);
-        upper =6e9; //-hackConfig.sampleRate/(2*freqUnits);
-        ui->SBfreq->setRange(lower, upper);
+        lower =1e6+hackConfig.sampleRate/(2*freqUnits);
+        upper =6e9-hackConfig.sampleRate/(2*freqUnits);
         break;
 
     case 1:
 //        freqUnits = 1000;
         freqUnits = 1e3;
-        lower = 1e3; //+hackConfig.sampleRate/(2*freqUnits);
-        upper = 6e6; //-hackConfig.sampleRate/(2*freqUnits);
-        ui->SBfreq->setRange(lower, upper);
+        lower = 1e3+hackConfig.sampleRate/(2*freqUnits);
+        upper = 6e6-hackConfig.sampleRate/(2*freqUnits);
         break;
 
     case 2:
 //        freqUnits = 1000000;
         freqUnits = 1e6;
-        lower =1; //+hackConfig.sampleRate/(2*freqUnits);
-        upper =6e3; //-hackConfig.sampleRate/(2*freqUnits);
-        ui->SBfreq->setRange(lower, upper);
+        lower =1+hackConfig.sampleRate/(2*freqUnits);
+        upper =6e3-hackConfig.sampleRate/(2*freqUnits);
         break;
 
     case 3:
 //        freqUnits = 1000000000;
         freqUnits = 1e9;
-        lower =1e-3; //+hackConfig.sampleRate/(2*freqUnits);
-        upper = 6; //-hackConfig.sampleRate/(2*freqUnits);
-        ui->SBfreq->setRange(lower, upper);
+        lower =1e-3+hackConfig.sampleRate/(2*freqUnits);
+        upper = 6-hackConfig.sampleRate/(2*freqUnits);
         break;
     default:
         break;
     }
 
-    double newFreq = hackConfig.rxFreq/freqUnits;
+    double newFreq = double(hackConfig.rxFreq)/freqUnits;
+
     ui->SBfreq->setValue(newFreq);
-    qDebug() << "Rx freq:\t"<< hackConfig.rxFreq << " freqUnits:\t" << freqUnits;
-    qDebug() << "lower "<< lower<< "\tUpper "<< upper<< "\tnew rx freq " <<newFreq;
+
+    ui->SBfreq->setMinimum(lower);
+    ui->SBfreq->setMaximum(upper);
 
     ui->fftGraph->xAxis->setLabel("Frequency ["+ui->RBgroup_freqUnits->checkedButton()->text() + "]");
     ui->fftGraph->replot();
