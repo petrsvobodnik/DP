@@ -18,6 +18,7 @@ zeroSpan::zeroSpan(QWidget *parent) :
     ui->graphWidget->graph(0)->setPen(QPen(Qt::blue));
     ui->graphWidget->graph(0)->setName("Single frequency plot");
     ui->graphWidget->yAxis->setRange(-100, -20);
+    ui->graphWidget->yAxis->setLabel("Power [dBm]");
 
     ui->graphWidget->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables| QCP::iRangeDrag);
     ui->graphWidget->axisRect()->setRangeDrag(Qt::Horizontal);

@@ -16,6 +16,7 @@ public:
     explicit LoadData(QWidget *parent = 0);
     ~LoadData();
 
+
 private slots:
     void on_PBopenFile_clicked();
     void PBplotData_clicked();
@@ -27,6 +28,7 @@ private slots:
     void on_SBtreshold_valueChanged(int arg1);
 
     void on_checkBoxLineVisible_toggled(bool checked);
+    void rangeChanged(QCPRange newRange);
 
 private:
     Ui::LoadData *ui;

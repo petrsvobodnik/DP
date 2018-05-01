@@ -25,23 +25,26 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
 
     ui->LEfilename->setReadOnly(true);
 
+
     ui->graphWidget->addGraph();
     ui->graphWidget->graph(0)->setName("FFT diagram");
-    ui->graphWidget->yAxis->setRange(-100, 0);
+    ui->SBlowerRange->setValue(-100);
+    ui->SBupperRange->setValue(-20);
+    ui->graphWidget->yAxis->setRange(ui->SBlowerRange->value(), ui->SBupperRange->value());
     ui->graphWidget->yAxis->setLabel("Power [dBm]");
     ui->graphWidget->xAxis->setLabel("Frequency [kHz]");
-    ui->graphWidget->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables| QCP::iRangeDrag);
-    ui->graphWidget->axisRect()->setRangeDrag(Qt::Horizontal);
-    ui->graphWidget->axisRect()->setRangeZoom(Qt::Horizontal);
+    ui->graphWidget->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
+    ui->graphWidget->axisRect()->setRangeDrag(Qt::Vertical);
+    ui->graphWidget->axisRect()->setRangeZoom(Qt::Vertical);
 
 
 
-    ui->waterfallWidget->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables| QCP::iRangeDrag);
+    ui->waterfallWidget->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
     ui->waterfallWidget->axisRect()->setRangeDrag(Qt::Vertical);
     ui->waterfallWidget->axisRect()->setRangeZoom(Qt::Vertical);
     colorMap1 = new QCPColorMap(ui->waterfallWidget->xAxis, ui->waterfallWidget->yAxis);
     colorMap1->data()->setSize(noOfCol, noOfRow);
-//    colorMap1->setGradient(QCPColorGradient::gpPolar);
+    ui->waterfallWidget->yAxis->setRangeReversed(true);
 
     QCPColorScale *colorScale = new QCPColorScale(ui->waterfallWidget);
     ui->waterfallWidget->plotLayout()->addElement(0, 1, colorScale);
@@ -64,6 +67,7 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
 
     timeLine = new QCPItemLine(ui->waterfallWidget);
     timeLine->setPen(QPen(Qt::red));
+    timeLine->setVisible(false);
 
 
     // Band usage initialization
@@ -87,10 +91,19 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
     tresholdLine1->setVisible(false);
     tresholdLine1->setPen(QPen(Qt::red));
 
-    ui->LEupperWF->setReadOnly(true);
+
+    ui->SBtreshold->setValue(-30);
+    ui->SliderTreshold->setValue(ui->SBtreshold->value());
+    ui->SBtreshold->setDisabled(true);
+    ui->SliderTreshold->setDisabled(true);
     ui->SliderTime->setDisabled(true);
-    ui->SBlowerRange->setValue(-100);
-    ui->SBupperRange->setValue(-20);
+
+    connect(ui->SBupperWF, SIGNAL(valueChanged(int)), ui->SliderColorScale, SLOT(setValue(int)));
+    connect(ui->SliderColorScale, SIGNAL(valueChanged(int)), ui->SBupperWF, SLOT(setValue(int)));
+    connect(ui->SBtreshold, SIGNAL(valueChanged(int)), ui->SliderTreshold, SLOT(setValue(int)));
+    connect(ui->SliderTreshold, SIGNAL(valueChanged(int)), ui->SBtreshold, SLOT(setValue(int)));
+    connect(ui->graphWidget->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(rangeChanged(QCPRange)));
+
 }
 
 LoadData::~LoadData()
@@ -102,6 +115,8 @@ void LoadData::on_PBopenFile_clicked()
 {
     // After file is opened, some basic information about measurement are read out and displayed in the left side of the window
     // Also, list of times and frequencies is extracted from the file
+
+
 
     filename1 = QFileDialog::getOpenFileName(this, "Select file with data", "/home/golem/Downloads", "CSV file (*.csv)");   //QDir::homePath()
     ui->LEfilename->setText(filename1);
@@ -222,11 +237,15 @@ void LoadData::on_PBopenFile_clicked()
     ui->SliderTime->setValue(0);
     ui->LEtime->setText(timeList.at(0));
     ui->SliderTime->setDisabled(false);
+    timeLine->setVisible(true);
+    ui->SBtreshold->setDisabled(false);
+    ui->SliderTreshold->setDisabled(false);
 
     PBplotData_clicked();
 }
 
 void LoadData::PBplotData_clicked()
+// This function plots WF diagram
 {
     rowCount1 = 1;      // counter of lines in the whole file (including header)
     QFile file(filename1);
@@ -245,24 +264,26 @@ void LoadData::PBplotData_clicked()
     while (stream.readLineInto(&line)){     // reading the file line by line
         rowCount1++;    // increment line counter
 
-        if ((rowCount1 > rowOffset1) && (rowCount1 < noOfRow+rowOffset1)){       // for testing purposes
+        if ((rowCount1 > rowOffset1) && (rowCount1 < noOfRow+rowOffset1)){
             frequenz = line.split('\t');
 
             for (int m=1; m<noOfCol; m++){
-                QString pomoc = frequenz.at(m+1);
-                colorMap1->data()->setCell(m, rowCount1-rowOffset1, pomoc.toDouble());
+                QString pomoc = frequenz.at(m);
+
+                if(m<int(noOfCol/2)) // swapping the left and right halves of spectrum
+                    colorMap1->data()->setCell(m+noOfCol/2-1, rowCount1-rowOffset1, pomoc.toDouble());
+                else
+                    colorMap1->data()->setCell(m-noOfCol/2, rowCount1-rowOffset1, pomoc.toDouble());
             }
-//        dataFreq1.append(valueFreq.toDouble());
         }
     }
     file.close();
 
-//    Color range manipulation
-    colorMap1->rescaleDataRange();
-    double range2 =  colorMap1->dataRange().upper;
-    ui->LEupperWF->setText(QString::number(range2));
-    ui->SliderColorScale->setValue(int (range2));
+    double WFupper = -20;
+    colorMap1->setDataRange(QCPRange(-100, WFupper));
 
+    ui->SBupperWF->setValue(WFupper);
+    ui->SliderColorScale->setValue(int (WFupper));
 
     ui->waterfallWidget->rescaleAxes();
     ui->waterfallWidget->replot();
@@ -328,7 +349,6 @@ void LoadData::on_SliderColorScale_valueChanged(int value)
 {
     colorMap1->setDataRange(QCPRange(-100, value));
     ui->waterfallWidget->replot();
-    ui->LEupperWF->setText(QString::number(value));
 }
 
 void LoadData::on_SliderTime_valueChanged(int value)
@@ -360,4 +380,10 @@ void LoadData::on_checkBoxLineVisible_toggled(bool checked)
 {
     tresholdLine1->setVisible(checked);
     ui->graphWidget->replot();
+}
+
+void LoadData::rangeChanged(QCPRange newRange){
+    // change values of spinboxes
+    ui->SBlowerRange->setValue(newRange.lower);
+    ui->SBupperRange->setValue(newRange.upper);
 }

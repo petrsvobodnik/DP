@@ -61,12 +61,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->CBsampleRate->addItems(listRates);
     ui->CBsampleRate->setCurrentIndex(3);  // setting 10MHz as standard sample rate
     ui->CBsampleRate->setDisabled(true);
+    ui->labelFreqRes->setText("Freq. resolution: 9765.63Hz");
 
     listWindow << "Square" << "Hamming" << "Hann";
     ui->CBwinShape->addItems(listWindow);
-
-//    listFreqChoice << "Custom" << "Preset 1" << "Preset 2" << "Preset 3";
-//    ui->CBfreq->addItems(listFreqChoice);
 
     listUnits << "Hz" << "kHz" << "MHz" << "GHz";
     ui->CBunits->addItems(listUnits);
@@ -93,12 +91,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->yAxis->setLabel("Power [dBm]");
     ui->fftGraph->yAxis2->setRange(0,1);
     ui->fftGraph->yAxis2->setVisible(false);
+
     ui->fftGraph->xAxis->setLabel("Frequency [" + ui->CBunits->currentText() + "]");
     ui->fftGraph->legend->setVisible(true);
-
-    ui->fftGraph->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
-    ui->fftGraph->axisRect()->setRangeDrag(Qt::Horizontal);
-    ui->fftGraph->axisRect()->setRangeZoom(Qt::Horizontal);
 
     tresholdLine = new QCPItemLine(ui->fftGraph);
     tresholdLine->setVisible(false);
@@ -175,6 +170,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     defineWindow(fftFiltr,ui->CBwinShape->currentIndex());
 
+    connect(ui->SBupperWF, SIGNAL(valueChanged(int)), ui->SliderColorScale, SLOT(setValue(int)));
+    connect(ui->SBtreshold, SIGNAL(valueChanged(int)), ui->SliderTreshold, SLOT(setValue(int)));
+    connect(ui->SliderTreshold, SIGNAL(valueChanged(int)), ui->SBtreshold, SLOT(setValue(int)));
     connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(doFFT()));
 }
 
@@ -252,7 +250,12 @@ void MainWindow::on_PBstartRX_clicked()
     // Start reception
     hackrf_start_rx(hackConfig.radioID, data_cb, NULL);
     guiRefresh.start(500);
+
+    ui->PBstartRX->setChecked(true);
+
     ui->PBstopRX->setDisabled(false);
+    ui->fftGraph->setInteraction(QCP::iRangeZoom, false);
+    ui->fftGraph->setInteraction(QCP::iRangeDrag, false);
 }
 
 void MainWindow::on_PBstopRX_clicked()
@@ -260,6 +263,13 @@ void MainWindow::on_PBstopRX_clicked()
     // End reception
     hackrf_stop_rx(hackConfig.radioID);
     guiRefresh.stop();
+
+    ui->PBstartRX->setChecked(false);
+
+    ui->fftGraph->setInteraction(QCP::iRangeZoom, true);
+    ui->fftGraph->setInteraction(QCP::iRangeDrag, true);
+    ui->fftGraph->axisRect()->setRangeDrag(Qt::Horizontal);
+    ui->fftGraph->axisRect()->setRangeZoom(Qt::Horizontal);
 }
 
 void MainWindow::on_LEfreq_returnPressed()
@@ -286,6 +296,7 @@ void MainWindow::on_PBsetFreq_clicked()
 void MainWindow::on_SBupperRange_valueChanged(int arg1)
 {
     ui->fftGraph->yAxis->setRangeUpper(arg1);
+    ui->fftGraph->replot();
 }
 
 int data_cb(hackrf_transfer* trn){
@@ -335,6 +346,7 @@ void MainWindow::plot(double dataY[], double dataX[], int N, int graphID, bool s
     ui->fftGraph->graph(graphID)->setLineStyle(QCPGraph::lsLine);
 
     ui->fftGraph->xAxis->rescale();
+
     ui->fftGraph->replot();
     return;
 }
@@ -415,8 +427,11 @@ void MainWindow::setWaterfallData()
         }
 
     ui->waterfall->rescaleAxes();
+//    ui->waterfall->yAxis->setRangeUpper(ui->SBupperRange->value());
+//    colorMap->setDataRange();
+    on_SliderColorScale_valueChanged(ui->SBupperWF->value());
     ui->waterfall->replot();
-
+//    ui->SBupperWF->setValue(int (ui->waterfall->yAxis->range().upper));
 
 }
 
@@ -474,6 +489,7 @@ void MainWindow::saveMeasInfo(double freq[]){        // writes information about
 }
 
 void MainWindow::saveMeasuredData(double FFTdata[]){        // saving data itself
+    QString labelText = ui->labelSaving->text().left(ui->labelSaving->text().lastIndexOf("\n")+1);
     QFile fileInput(saveFileName);
 
     if (fileInput.open(QIODevice::WriteOnly| QIODevice::Append)){
@@ -487,6 +503,7 @@ void MainWindow::saveMeasuredData(double FFTdata[]){        // saving data itsel
         textStream<< "\n";
     }
     saveCounter++;
+    ui->labelSaving->setText(labelText + "Samples saved: " + QString::number(saveCounter));
 }
 
 void MainWindow::on_PBchooseDir_clicked()
@@ -530,13 +547,17 @@ void MainWindow::on_PBsaveStart_clicked()
     saveMeasInfo(samples);
 
     ui->LEfreq->setDisabled(true);
+    ui->SBfreq->setDisabled(true);
     ui->PBsetFreq->setDisabled(true);
     ui->PBsaveStop->setDisabled(false);
     ui->PBsaveStart->setDisabled(true);
     ui->PBassignFileName->setDisabled(true);
+    ui->GBfreqUnits->setDisabled(true);
     ui->PBchooseDir->setDisabled(true);
     ui->LEfileName->setReadOnly(true);
     ui->labelSaving->show();
+    QString text = "Saving data\nStarted at: ";
+    ui->labelSaving->setText(text.append(QDateTime::currentDateTime().toString("hh:mm:ss") + "\n"));
 
     saveEnabled = true;     // allows saving in doFFT() function
 }
@@ -558,9 +579,10 @@ void MainWindow::on_PBsaveStop_clicked()
 {
     if (saveEnabled){
         saveEnabled = false;
-        ui->LEfreq->setDisabled(false);
+        ui->SBfreq->setDisabled(false);
         ui->PBsetFreq->setDisabled(false);
         ui->PBsaveStart->setDisabled(false);
+        ui->GBfreqUnits->setDisabled(false);
         ui->PBsaveStop->setDisabled(true);
         ui->labelSaving->hide();
 
@@ -602,7 +624,8 @@ void MainWindow::on_SliderColorScale_valueChanged(int value)    // changing rang
 {
     colorMap->setDataRange(QCPRange(-100, value));
     ui->waterfall->replot();
-    ui->LEupperWF->setText(QString::number(value));
+    ui->SBupperWF->setValue(value);
+
 }
 
 void MainWindow::on_CBsampleRate_currentIndexChanged(const QString &arg1)
@@ -610,6 +633,8 @@ void MainWindow::on_CBsampleRate_currentIndexChanged(const QString &arg1)
     if (hackConfig.hackrf_connected){
         hackConfig.sampleRate = arg1.toDouble() * freqUnits;
         hackrf_set_sample_rate(hackConfig.radioID, hackConfig.sampleRate);
+        double res = arg1.toDouble()/0.001024;
+        ui->labelFreqRes->setText("Freq. resolution: " + QString::number(res) + "Hz");
     }
 }
 
@@ -710,6 +735,8 @@ void MainWindow::on_SBfreq_valueChanged(double arg1)
 void MainWindow::occupancyPlot(){
     int busy = 0;                   // counter of occupied freqs
     for (int i=0; i<N/2; i++){        // data need to be swapped before plotting
+
+        // comparision of actual value with treshold value
         if (spectrum[i] > ui->SBtreshold->value()){
             usage->data()->setCell(N/2+i, 1, 0);
             busy++;
@@ -736,6 +763,7 @@ void MainWindow::occupancyPlot(){
 void MainWindow::on_SBtreshold_valueChanged(int)
 {
     occupancyPlot();
+    ui->fftGraph->replot();
 }
 
 void MainWindow::on_checkBoxLineVisible_toggled(bool checked)
@@ -743,3 +771,4 @@ void MainWindow::on_checkBoxLineVisible_toggled(bool checked)
     tresholdLine->setVisible(checked);
     ui->fftGraph->replot();
 }
+

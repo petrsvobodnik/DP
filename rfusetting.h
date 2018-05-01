@@ -30,6 +30,8 @@ private slots:
     void on_PBconnectAR_clicked();
     void on_PBsetpolarisation_clicked();
 
+    void on_PBconnectAU_clicked();
+
 public slots:
     void RBgroupLEVEL_clicked(int );
     void RBgroupANT_clicked(int );

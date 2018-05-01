@@ -55,3 +55,6 @@ FORMS += \
 
 DISTFILES += \
     ../../Downloads/od rokose/data/BS_FM_0-6GHz.txt
+
+RESOURCES += \
+    freqdependant.qrc
