@@ -157,7 +157,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     defineWindow(fftFiltr,ui->CBwinShape->currentIndex());
 
-    connect(ui->SBupperWF, SIGNAL(valueChanged(int)), ui->SliderColorScale, SLOT(setValue(int)));
     connect(ui->SBtreshold, SIGNAL(valueChanged(int)), ui->SliderTreshold, SLOT(setValue(int)));
     connect(ui->SliderTreshold, SIGNAL(valueChanged(int)), ui->SBtreshold, SLOT(setValue(int)));
     connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(doFFT()));

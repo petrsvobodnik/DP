@@ -184,7 +184,7 @@
   <widget class="QSlider" name="SliderTime">
    <property name="geometry">
     <rect>
-     <x>180</x>
+     <x>160</x>
      <y>580</y>
      <width>611</width>
      <height>16</height>
@@ -197,32 +197,10 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QSlider" name="SliderColorScale">
-   <property name="geometry">
-    <rect>
-     <x>670</x>
-     <y>20</y>
-     <width>171</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="minimum">
-    <number>-90</number>
-   </property>
-   <property name="maximum">
-    <number>0</number>
-   </property>
-   <property name="singleStep">
-    <number>5</number>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-  </widget>
   <widget class="QLineEdit" name="LEtime">
    <property name="geometry">
     <rect>
-     <x>70</x>
+     <x>50</x>
      <y>580</y>
      <width>101</width>
      <height>22</height>
@@ -232,7 +210,7 @@
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>900</x>
+     <x>870</x>
      <y>570</y>
      <width>81</width>
      <height>20</height>
@@ -242,10 +220,10 @@
     <string>Lower range</string>
    </property>
   </widget>
-  <widget class="QSpinBox" name="SBlowerRange">
+  <widget class="QSpinBox" name="SBlowerSpectrum">
    <property name="geometry">
     <rect>
-     <x>900</x>
+     <x>870</x>
      <y>590</y>
      <width>61</width>
      <height>23</height>
@@ -264,7 +242,7 @@
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>810</x>
+     <x>780</x>
      <y>570</y>
      <width>81</width>
      <height>20</height>
@@ -274,17 +252,17 @@
     <string>Upper range</string>
    </property>
   </widget>
-  <widget class="QSpinBox" name="SBupperRange">
+  <widget class="QSpinBox" name="SBupperSpectrum">
    <property name="geometry">
     <rect>
-     <x>810</x>
+     <x>780</x>
      <y>590</y>
      <width>61</width>
      <height>23</height>
     </rect>
    </property>
    <property name="minimum">
-    <number>-60</number>
+    <number>-70</number>
    </property>
    <property name="maximum">
     <number>0</number>
@@ -409,7 +387,7 @@
   <widget class="QSpinBox" name="SBupperWF">
    <property name="geometry">
     <rect>
-     <x>610</x>
+     <x>510</x>
      <y>20</y>
      <width>47</width>
      <height>23</height>
@@ -428,7 +406,7 @@
   <widget class="QLabel" name="label_7">
    <property name="geometry">
     <rect>
-     <x>610</x>
+     <x>510</x>
      <y>0</y>
      <width>121</width>
      <height>20</height>
@@ -455,6 +433,80 @@
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>582</y>
+     <width>41</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Time:</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="PBrescaleSpectrum">
+   <property name="geometry">
+    <rect>
+     <x>940</x>
+     <y>590</y>
+     <width>61</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Rescale</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>640</x>
+     <y>0</y>
+     <width>121</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Lower range [dBm]</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="SBlowerWF">
+   <property name="geometry">
+    <rect>
+     <x>640</x>
+     <y>20</y>
+     <width>51</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-120</number>
+   </property>
+   <property name="maximum">
+    <number>-50</number>
+   </property>
+   <property name="singleStep">
+    <number>5</number>
+   </property>
+   <property name="value">
+    <number>-100</number>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="PBrescaleWF">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>20</y>
+     <width>61</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Rescale</string>
    </property>
   </widget>
  </widget>

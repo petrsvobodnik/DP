@@ -28,8 +28,6 @@ private slots:
     void on_PBrotLEFT_pressed();
     void computeGain();
     void on_PBconnectAR_clicked();
-    void on_PBsetpolarisation_clicked();
-
     void on_PBconnectAU_clicked();
 
 public slots:
@@ -41,6 +39,8 @@ public slots:
 
 private:
     Ui::RFUsetting *ui;
+    void readParameters(QString name, QVector<double> *freq, QVector<double> *val);
+    double interpolateValue(QVector<double> *freq, QVector<double> *val);
 };
 
 #endif // RFUSETTING_H

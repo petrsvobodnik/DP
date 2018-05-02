@@ -5,7 +5,8 @@
 QString filename1, dateOfMeas1;
 int rowCount1 = 0, columnCount1 = 0, rowTotal1;
 int rowOffset1 = 6, columnOffset1 = 1;
-int noOfRow =100, noOfCol = 1024;      \
+int noOfRow =100, noOfCol = 1024;
+int sampleSelect;
 
 QStringList freqList, timeList;
 
@@ -28,9 +29,9 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
 
     ui->graphWidget->addGraph();
     ui->graphWidget->graph(0)->setName("FFT diagram");
-    ui->SBlowerRange->setValue(-100);
-    ui->SBupperRange->setValue(-20);
-    ui->graphWidget->yAxis->setRange(ui->SBlowerRange->value(), ui->SBupperRange->value());
+    ui->SBlowerSpectrum->setValue(-100);
+    ui->SBupperSpectrum->setValue(-20);
+    ui->graphWidget->yAxis->setRange(ui->SBlowerSpectrum->value(), ui->SBupperSpectrum->value());
     ui->graphWidget->yAxis->setLabel("Power [dBm]");
     ui->graphWidget->xAxis->setLabel("Frequency [kHz]");
     ui->graphWidget->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
@@ -98,11 +99,11 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
     ui->SliderTreshold->setDisabled(true);
     ui->SliderTime->setDisabled(true);
 
-    connect(ui->SBupperWF, SIGNAL(valueChanged(int)), ui->SliderColorScale, SLOT(setValue(int)));
-    connect(ui->SliderColorScale, SIGNAL(valueChanged(int)), ui->SBupperWF, SLOT(setValue(int)));
+
     connect(ui->SBtreshold, SIGNAL(valueChanged(int)), ui->SliderTreshold, SLOT(setValue(int)));
     connect(ui->SliderTreshold, SIGNAL(valueChanged(int)), ui->SBtreshold, SLOT(setValue(int)));
     connect(ui->graphWidget->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(rangeChanged(QCPRange)));
+    connect(colorMap1, SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(WFupdateSBRange(QCPRange)));
 
 }
 
@@ -183,6 +184,10 @@ void LoadData::on_PBopenFile_clicked()
         rowCount1++;
     }
 
+  // Max count of samples in WF diagram is 32767. When there are more samples, only every
+  // sampleSelect-th sample will be plotted
+    sampleSelect = (rowCount1 / 32760) +1;
+
     file.close();
     rowTotal1 = rowCount1 - rowOffset1;
 
@@ -233,7 +238,7 @@ void LoadData::on_PBopenFile_clicked()
     noOfRow = rowTotal1;
 
     // allowing the GUI elements
-    ui->SliderTime->setRange(1, noOfRow);
+    ui->SliderTime->setRange(1, noOfRow-2);
     ui->SliderTime->setValue(0);
     ui->LEtime->setText(timeList.at(0));
     ui->SliderTime->setDisabled(false);
@@ -267,13 +272,17 @@ void LoadData::PBplotData_clicked()
         if ((rowCount1 > rowOffset1) && (rowCount1 < noOfRow+rowOffset1)){
             frequenz = line.split('\t');
 
-            for (int m=1; m<noOfCol; m++){
-                QString pomoc = frequenz.at(m);
 
-                if(m<int(noOfCol/2)) // swapping the left and right halves of spectrum
-                    colorMap1->data()->setCell(m+noOfCol/2-1, rowCount1-rowOffset1, pomoc.toDouble());
-                else
-                    colorMap1->data()->setCell(m-noOfCol/2, rowCount1-rowOffset1, pomoc.toDouble());
+            // reducing number of samples plotted in WF in case there are over 32760 samples
+            if(rowCount1%sampleSelect == 0){
+                for (int m=1; m<noOfCol; m++){
+                    QString pomoc = frequenz.at(m);
+
+                    if(m<int(noOfCol/2)) // swapping the left and right halves of spectrum
+                        colorMap1->data()->setCell(m+noOfCol/2-1, rowCount1-rowOffset1, pomoc.toDouble());
+                    else
+                        colorMap1->data()->setCell(m-noOfCol/2, rowCount1-rowOffset1, pomoc.toDouble());
+                }
             }
         }
     }
@@ -283,7 +292,6 @@ void LoadData::PBplotData_clicked()
     colorMap1->setDataRange(QCPRange(-100, WFupper));
 
     ui->SBupperWF->setValue(WFupper);
-    ui->SliderColorScale->setValue(int (WFupper));
 
     ui->waterfallWidget->rescaleAxes();
     ui->waterfallWidget->replot();
@@ -307,7 +315,7 @@ void LoadData::plotSpectrum(int idx){
     }
 
     ui->graphWidget->graph(0)->setData(freqValue, powValue);
-    ui->graphWidget->yAxis->setRange(ui->SBlowerRange->value(), ui->SBupperRange->value());
+    ui->graphWidget->yAxis->setRange(ui->SBlowerSpectrum->value(), ui->SBupperSpectrum->value());
     ui->graphWidget->xAxis->setRange(freqValue.first(), freqValue.last());
 
     tresholdLine1->start->setCoords(freqValue.first(), ui->SBtreshold->value());
@@ -345,9 +353,9 @@ void LoadData::plotOccupancy(){
     ui->bandUsage->replot();
 }
 
-void LoadData::on_SliderColorScale_valueChanged(int value)
+void LoadData::WFdataRange(int lower, int upper)
 {
-    colorMap1->setDataRange(QCPRange(-100, value));
+    colorMap1->setDataRange(QCPRange(lower, upper));
     ui->waterfallWidget->replot();
 }
 
@@ -359,13 +367,13 @@ void LoadData::on_SliderTime_valueChanged(int value)
 
 }
 
-void LoadData::on_SBupperRange_valueChanged(int arg1)
+void LoadData::on_SBupperSpectrum_valueChanged(int arg1)
 {
     ui->graphWidget->yAxis->setRangeUpper(arg1);
     ui->graphWidget->replot();
 }
 
-void LoadData::on_SBlowerRange_valueChanged(int arg1)
+void LoadData::on_SBlowerSpectrum_valueChanged(int arg1)
 {
     ui->graphWidget->yAxis->setRangeLower(arg1);
     ui->graphWidget->replot();
@@ -382,8 +390,40 @@ void LoadData::on_checkBoxLineVisible_toggled(bool checked)
     ui->graphWidget->replot();
 }
 
-void LoadData::rangeChanged(QCPRange newRange){
+void LoadData::spectrumRangeChanged(QCPRange newRange){
     // change values of spinboxes
-    ui->SBlowerRange->setValue(newRange.lower);
-    ui->SBupperRange->setValue(newRange.upper);
+    ui->SBlowerSpectrum->setValue(newRange.lower);
+    ui->SBupperSpectrum->setValue(newRange.upper);
+}
+
+
+void LoadData::on_PBrescaleSpectrum_clicked()
+{
+    ui->graphWidget->rescaleAxes();
+    if(ui->graphWidget->yAxis->range().upper< -60)
+        ui->graphWidget->yAxis->setRangeUpper(-60);
+    ui->graphWidget->replot();
+}
+
+void LoadData::on_SBupperWF_valueChanged(int arg1)
+{
+    WFdataRange(ui->SBlowerWF->value(), arg1);
+}
+
+void LoadData::on_SBlowerWF_valueChanged(int arg1)
+{
+    WFdataRange( arg1, ui->SBupperWF->value());
+}
+
+void LoadData::WFupdateSBRange(QCPRange newRange){
+    ui->SBlowerWF->setValue(int(newRange.lower));
+    ui->SBupperWF->setValue(int(newRange.upper));
+}
+
+
+void LoadData::on_PBrescaleWF_clicked()
+{
+    ui->waterfallWidget->rescaleAxes();
+    colorMap1->rescaleDataRange();
+    ui->waterfallWidget->replot();
 }

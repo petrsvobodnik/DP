@@ -8,6 +8,7 @@
 extern radio_config hackConfig;
 QSerialPort portAR, portAU;
 QTimer readPositionTimer;
+QVector<double> filtFreq, filtVal, antFreq, antVal, ampFreq, ampVal;
 
 RFUsetting::RFUsetting(QWidget *parent) :
     QDialog(parent),
@@ -47,7 +48,7 @@ RFUsetting::RFUsetting(QWidget *parent) :
     connect(ui->RBgroupANT, SIGNAL(buttonClicked(int)), this, SLOT(computeGain()));
     connect(ui->RBgroupFILT, SIGNAL(buttonClicked(int)), this, SLOT(RBgroupFILT_clicked(int)));
     connect(ui->RBgroupFILT, SIGNAL(buttonClicked(int)), this, SLOT(computeGain()));
-    connect(ui->SBlevel, SIGNAL(valueChanged(int)), this, SLOT(computeGain()));
+    connect(ui->SBlevel, SIGNAL(valueChanged(double)), this, SLOT(computeGain()));
     connect(ui->LEantGain, SIGNAL(textChanged(QString)), this, SLOT(computeGain()));
     connect(ui->LEfiltGain, SIGNAL(textChanged(QString)), this, SLOT(computeGain()));
 
@@ -84,12 +85,12 @@ RFUsetting::RFUsetting(QWidget *parent) :
     ui->CBserialPortAR->addItems(listOfPorts);
     ui->CBserialPortAU->addItems(listOfPorts);
 
-    if (portInfo.length()==0){
-        qDebug() << "Names of ports are made up";
-        ui->CBserialPortAR->addItem("COM1");
-        ui->CBserialPortAR->addItem("COM2");
-        ui->CBserialPortAR->addItem("COM3");
-    }
+//    if (portInfo.length()==0){
+//        qDebug() << "Names of ports are made up";
+//        ui->CBserialPortAR->addItem("COM1");
+//        ui->CBserialPortAR->addItem("COM2");
+//        ui->CBserialPortAR->addItem("COM3");
+//    }
 
     connect(&readPositionTimer, SIGNAL(timeout()), this, SLOT(getRotatorState()));
 }
@@ -179,16 +180,17 @@ void RFUsetting::on_PBrotRIGHT_released()
 }
 
 void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
-    int ampGain = 40;
     QString filename = ":/filters/data/Zes_0-6GHz.txt";
 
     switch (button) {
-    case 1: // AMP
-        ui->SBlevel->setMaximum(ampGain);
-        ui->ATTslider->setMaximum(ampGain);
-        ui->SBlevel->setValue(ampGain);
+    case 1: // AMP        
         ui->SBlevel->setReadOnly(true);
         ui->ATTslider->hide();
+
+        readParameters(":/filters/data/Zes_0-6GHz.txt", &ampFreq, &ampVal);
+        ui->SBlevel->setValue(interpolateValue(&ampFreq, &ampVal));
+
+
         break;
 
     case 2: // ATT
@@ -219,71 +221,92 @@ void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
 
 void RFUsetting::RBgroupANT_clicked(int button){
     // tady bude potreba znat parametry anteny a volat fci, ktera vypocita zisk
-    ui->LEantGain->setText(QString::number(-10*button));
     ui->LEantGain->setReadOnly(true);
-    QString filename;
+    QString nameOfFile;
 
     switch (button) {
-    case 1:
-        filename = "dd";
+    case 1: // HK309
+        nameOfFile = ":/filters/data/anteny/HK309_0.2-1.3.txt";
         break;
-    case 2:
-        filename = "dd";
+
+    case 2: // HL223
+        nameOfFile = ":/filters/data/anteny/HL223_0.2-1.3.txt";
         break;
+
     case 3:
-        filename = "dd";
+        nameOfFile = "";
+        ui->LEantGain->setText(QString::number(0));
         break;
+
     case 4:
+        nameOfFile = "";
         ui->LEantGain->setText(QString::number(0));
         ui->LEantGain->setReadOnly(false);
         break;
+
     default:
         break;
     }
+
+    if (nameOfFile != ""){
+        readParameters(nameOfFile, &antFreq, &antVal);
+        double gain = interpolateValue(&antFreq, &antVal);
+        ui->LEantGain->setText(QString::number(gain, 'f', 1));
+    }
+    computeGain();
+
 }
 
 void RFUsetting::RBgroupFILT_clicked(int button){
     // to same jak u anteny
-    ui->LEfiltGain->setText(QString::number(-10*button));
     ui->LEfiltGain->setReadOnly(true);
-    QString filename;
+    QString nameOfFile;
 
     switch (button) {
+    // Assigning filepath to the file with parameters
     case 1: // bypass
         ui->LEfiltGain->setText(QString::number(0));
-        filename = "";
+        nameOfFile = "";
         break;
 
     case 2: // LP
-        filename = ":/filters/data/filtry/LP_1GHz_0-6GHz.txt";
+        nameOfFile = ":/filters/data/filtry/LP_1GHz_0-6GHz.txt";
         break;
 
     case 3: // HP
-        filename = ":/filters/data/filtry/HP_1,1GHz_0-6GHz.txt";
+        nameOfFile = ":/filters/data/filtry/HP_1,1GHz_0-6GHz.txt";
         break;
 
     case 4: // BR FM
-        filename = ":/filters/data/filtry/BS_FM_0-6GHz.txt";
+        nameOfFile = ":/filters/data/filtry/BS_FM_0-6GHz.txt";
         break;
 
     case 5: // BR LTE
-        filename = "dd";
+        nameOfFile = "";
+        ui->LEfiltGain->setText(QString::number(0));
         break;
 
     case 6: // free port
         ui->LEfiltGain->setText(QString::number(0));
         ui->LEfiltGain->setReadOnly(false);
-        filename = "";
+        nameOfFile = "";
         break;
 
     default:
         break;
     }
+
+    if (nameOfFile != ""){
+        readParameters(nameOfFile, &filtFreq, &filtVal);
+        double gain = interpolateValue(&filtFreq, &filtVal);
+        ui->LEfiltGain->setText(QString::number(gain, 'f', 1));
+    }
+    computeGain();
 }
 
 void RFUsetting::computeGain(){
     // summing all the gains and losses
-    double gain = ui->LEfiltGain->text().toInt() + ui->LEantGain->text().toInt()
+    double gain = ui->LEfiltGain->text().toDouble() + ui->LEantGain->text().toDouble()
             + ui->SBlevel->value() - 5*ui->SBswitchLoss->value();
     ui->LEtotalGain->setText(QString::number(gain, 'f', 1));
 }
@@ -291,17 +314,19 @@ void RFUsetting::computeGain(){
 void RFUsetting::on_PBconnectAR_clicked()
 {
     ui->GBazimuth->setDisabled(false);
-    QMessageBox::information(this, "Connection established", "Connected to "+ui->CBserialPortAR->currentText());
+//    QMessageBox::information(this, "Connection established", "Connected to "+ui->CBserialPortAR->currentText());
     // rovnou vycist uhel natoceni rotatoru a polarizaci
 
-    portAR.setPortName(ui->CBserialPortAR->currentText());
     portAR.open(QIODevice::ReadWrite);
+    portAR.setPortName(ui->CBserialPortAR->currentText());
     portAR.setBaudRate(QSerialPort::Baud9600);
     portAR.setDataBits(QSerialPort::Data8);
     portAR.setParity(QSerialPort::NoParity);
     portAR.setStopBits(QSerialPort::OneStop);
     portAR.setFlowControl(QSerialPort::NoFlowControl);
-    getRotatorState();
+
+    portAR.write("hello");
+    //    getRotatorState();
 
 }
 
@@ -326,4 +351,64 @@ void RFUsetting::getRotatorState(){
     portAR.write("C");
     // osetrit cteni z portu a nastaveni hodnoty do GUI
 //    ui->SBazimuth->setValue(readAngle/1024*360);
+}
+
+void RFUsetting::readParameters(QString name, QVector<double> *freq, QVector<double> *val){
+    if (!freq->isEmpty()){
+        freq->clear();
+        val->clear();
+    }
+
+    QFile file(name);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){     // handling open file failure
+            qDebug() << "File not open!";
+            QMessageBox::warning(this, "Error", "File " + name + " not open!");
+            return;
+    }
+
+    file.seek(0);       // return to the file beginning
+
+    QStringList separatedLine;
+    QString singleLine;
+    QTextStream stream(&file);
+
+    while (stream.readLineInto(&singleLine)){ // reading out the header of the measurement
+        separatedLine = singleLine.split(';');
+        freq->append(separatedLine.at(0).toDouble());
+        QString value =separatedLine.at(1);
+        val->append(value.left(6).toDouble());
+    }
+
+    file.close();
+}
+
+
+double RFUsetting::interpolateValue(QVector<double> *freq, QVector<double> *val){
+    double x = ui->LEfreq->text().toDouble()*1000;
+    double x0, x1, y, y0, y1;
+    int index=0;
+
+    // searching for the index of frequency
+    while(freq->at(index)< x){
+        index++;
+    }
+
+    if (index==0){
+        y = val->at(index);
+    }
+    else{
+        x0 = freq->at(index-1);
+        x1 = freq->at(index);
+        y0 = val->at(index-1);
+        y1 = val->at(index);
+        y = y0 + (x-x0)*(y1-y0)/(x1-x0);
+
+    }
+
+    \
+
+
+
+    return y;
 }
