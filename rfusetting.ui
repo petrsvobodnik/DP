@@ -340,7 +340,7 @@
     <property name="geometry">
      <rect>
       <x>490</x>
-      <y>190</y>
+      <y>200</y>
       <width>59</width>
       <height>31</height>
      </rect>
@@ -358,7 +358,7 @@
     <property name="geometry">
      <rect>
       <x>410</x>
-      <y>181</y>
+      <y>191</y>
       <width>71</width>
       <height>51</height>
      </rect>
@@ -455,7 +455,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>free port</string>
+      <string>from file</string>
      </property>
      <attribute name="buttonGroup">
       <string notr="true">RBgroupANT</string>
@@ -466,7 +466,7 @@
     <property name="geometry">
      <rect>
       <x>410</x>
-      <y>160</y>
+      <y>170</y>
       <width>59</width>
       <height>14</height>
      </rect>
@@ -721,7 +721,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>free port</string>
+      <string>from file</string>
      </property>
      <attribute name="buttonGroup">
       <string notr="true">RBgroupFILT</string>
@@ -732,7 +732,7 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>110</y>
+      <y>130</y>
       <width>66</width>
       <height>23</height>
      </rect>
@@ -748,7 +748,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Coaxial switch loss</string>
+     <string>Coaxial switch</string>
     </property>
    </widget>
    <widget class="QPushButton" name="PBconnectAU">
@@ -774,8 +774,86 @@
      </rect>
     </property>
    </widget>
+   <widget class="QSpinBox" name="SBswitchCount">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>130</y>
+      <width>47</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>5</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>110</y>
+      <width>59</width>
+      <height>14</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Loss</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>110</y>
+      <width>59</width>
+      <height>14</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Count</string>
+    </property>
+   </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>PBgetGain</tabstop>
+  <tabstop>PBok</tabstop>
+  <tabstop>PBcancel</tabstop>
+  <tabstop>PBconnectAR</tabstop>
+  <tabstop>CBserialPortAR</tabstop>
+  <tabstop>LEtotalGain</tabstop>
+  <tabstop>LEfreq</tabstop>
+  <tabstop>SBswitchLoss</tabstop>
+  <tabstop>PBconnectAU</tabstop>
+  <tabstop>CBserialPortAU</tabstop>
+  <tabstop>SBswitchCount</tabstop>
+  <tabstop>RBpolarisationV</tabstop>
+  <tabstop>RBpolarisationH</tabstop>
+  <tabstop>PBsetpolarisation</tabstop>
+  <tabstop>PBrotLEFT</tabstop>
+  <tabstop>SBazimuth</tabstop>
+  <tabstop>PBsetRotator</tabstop>
+  <tabstop>PBstopRotator</tabstop>
+  <tabstop>PBrotRIGHT</tabstop>
+  <tabstop>RBant3</tabstop>
+  <tabstop>RBant1</tabstop>
+  <tabstop>RBant2</tabstop>
+  <tabstop>LEantGain</tabstop>
+  <tabstop>RBantfree</tabstop>
+  <tabstop>ATTslider</tabstop>
+  <tabstop>RBlevelATT</tabstop>
+  <tabstop>RBlevelAMP</tabstop>
+  <tabstop>RBlevelBypass</tabstop>
+  <tabstop>RBlevelfree</tabstop>
+  <tabstop>SBlevel</tabstop>
+  <tabstop>LEfiltGain</tabstop>
+  <tabstop>RBfiltLP</tabstop>
+  <tabstop>RBfiltGSM</tabstop>
+  <tabstop>RBfiltHP</tabstop>
+  <tabstop>RBfiltBypass</tabstop>
+  <tabstop>RBfiltFM</tabstop>
+  <tabstop>RBfiltfree</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -797,8 +875,8 @@
  </connections>
  <buttongroups>
   <buttongroup name="RBgroupLEVEL"/>
-  <buttongroup name="RBgroupPOLARISATION"/>
   <buttongroup name="RBgroupANT"/>
   <buttongroup name="RBgroupFILT"/>
+  <buttongroup name="RBgroupPOLARISATION"/>
  </buttongroups>
 </ui>

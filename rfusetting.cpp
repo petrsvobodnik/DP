@@ -42,6 +42,7 @@ RFUsetting::RFUsetting(QWidget *parent) :
     ui->RBgroupANT->setId(ui->RBant3, 3);
     ui->RBgroupANT->setId(ui->RBantfree, 4);
 
+
     connect(ui->RBgroupLEVEL, SIGNAL(buttonClicked(int)), this, SLOT(RBgroupLEVEL_clicked(int)));
     connect(ui->RBgroupLEVEL, SIGNAL(buttonClicked(int)), this, SLOT(computeGain()));
     connect(ui->RBgroupANT, SIGNAL(buttonClicked(int)), this, SLOT(RBgroupANT_clicked(int)));
@@ -53,15 +54,15 @@ RFUsetting::RFUsetting(QWidget *parent) :
     connect(ui->LEfiltGain, SIGNAL(textChanged(QString)), this, SLOT(computeGain()));
 
 
-    ui->RBant1->setChecked(true);
-    ui->LEantGain->setText(QString::number(0));
+//    ui->RBant1->setChecked(true);
+//    ui->LEantGain->setText(QString::number(0));
 
-    ui->RBlevelATT->setChecked(true);
-    ui->SBlevel->setValue(-55);
+//    ui->RBlevelATT->setChecked(true);
+//    ui->SBlevel->setValue(-55);
     ui->SBazimuth->setValue(0);
 
-    ui->RBfiltBypass->setChecked(true);
-    ui->LEfiltGain->setText(QString::number(0));
+//    ui->RBfiltBypass->setChecked(true);
+//    ui->LEfiltGain->setText(QString::number(0));
     ui->LEfiltGain->setReadOnly(true);
     ui->LEtotalGain->setAlignment(Qt::AlignCenter);
     ui->LEtotalGain->setReadOnly(true);
@@ -73,6 +74,7 @@ RFUsetting::RFUsetting(QWidget *parent) :
     ui->SBswitchLoss->setValue(0.2);
     ui->SBswitchLoss->setSingleStep(0.1);
     connect(ui->SBswitchLoss, SIGNAL(valueChanged(double)), this, SLOT(computeGain()));
+    connect(ui->SBswitchCount, SIGNAL(valueChanged(int)), this, SLOT(computeGain()));
 
 
     ui->GBpolarisation->setDisabled(true);
@@ -116,7 +118,11 @@ void RFUsetting::on_PBok_clicked()
 
 void RFUsetting::on_PBgetGain_clicked() // SET ALL
 {
-    hackConfig.RFUgain = ui->LEtotalGain->text().toFloat();
+    if ((ui->RBgroupFILT->checkedId()== -1) | (ui->RBgroupANT->checkedId()== -1) | (ui->RBgroupLEVEL->checkedId()== -1 )){
+        QMessageBox::warning(this, "Not complete", "You need to choose all the options!");
+        return;
+    }
+        hackConfig.RFUgain = ui->LEtotalGain->text().toFloat();
 //    This  button will set  RF unit -- will send commands to microcontroller
 
 }
@@ -180,7 +186,6 @@ void RFUsetting::on_PBrotRIGHT_released()
 }
 
 void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
-    QString filename = ":/filters/data/Zes_0-6GHz.txt";
 
     switch (button) {
     case 1: // AMP        
@@ -189,7 +194,6 @@ void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
 
         readParameters(":/filters/data/Zes_0-6GHz.txt", &ampFreq, &ampVal);
         ui->SBlevel->setValue(interpolateValue(&ampFreq, &ampVal));
-
 
         break;
 
@@ -235,13 +239,10 @@ void RFUsetting::RBgroupANT_clicked(int button){
 
     case 3:
         nameOfFile = "";
-        ui->LEantGain->setText(QString::number(0));
         break;
 
     case 4:
-        nameOfFile = "";
-        ui->LEantGain->setText(QString::number(0));
-        ui->LEantGain->setReadOnly(false);
+        nameOfFile = QFileDialog::getOpenFileName(this, "Select file...", QDir::homePath());
         break;
 
     default:
@@ -253,8 +254,10 @@ void RFUsetting::RBgroupANT_clicked(int button){
         double gain = interpolateValue(&antFreq, &antVal);
         ui->LEantGain->setText(QString::number(gain, 'f', 1));
     }
-    computeGain();
+    else
+        ui->LEantGain->setText(QString::number(0));
 
+    computeGain();
 }
 
 void RFUsetting::RBgroupFILT_clicked(int button){
@@ -283,13 +286,10 @@ void RFUsetting::RBgroupFILT_clicked(int button){
 
     case 5: // BR LTE
         nameOfFile = "";
-        ui->LEfiltGain->setText(QString::number(0));
         break;
 
     case 6: // free port
-        ui->LEfiltGain->setText(QString::number(0));
-        ui->LEfiltGain->setReadOnly(false);
-        nameOfFile = "";
+        nameOfFile = QFileDialog::getOpenFileName(this, "Select file...", QDir::homePath());
         break;
 
     default:
@@ -301,13 +301,16 @@ void RFUsetting::RBgroupFILT_clicked(int button){
         double gain = interpolateValue(&filtFreq, &filtVal);
         ui->LEfiltGain->setText(QString::number(gain, 'f', 1));
     }
+    else
+        ui->LEfiltGain->setText(QString::number(0));
+
     computeGain();
 }
 
 void RFUsetting::computeGain(){
     // summing all the gains and losses
     double gain = ui->LEfiltGain->text().toDouble() + ui->LEantGain->text().toDouble()
-            + ui->SBlevel->value() - 5*ui->SBswitchLoss->value();
+            + ui->SBlevel->value() - ui->SBswitchCount->value()*ui->SBswitchLoss->value();
     ui->LEtotalGain->setText(QString::number(gain, 'f', 1));
 }
 
@@ -403,12 +406,17 @@ double RFUsetting::interpolateValue(QVector<double> *freq, QVector<double> *val)
         y0 = val->at(index-1);
         y1 = val->at(index);
         y = y0 + (x-x0)*(y1-y0)/(x1-x0);
-
     }
-
-    \
-
-
-
     return y;
 }
+
+void RFUsetting::on_SBlevel_valueChanged(double arg1)
+{
+    ui->ATTslider->setValue(int (arg1));
+}
+
+void RFUsetting::on_ATTslider_valueChanged(int value)
+{
+    ui->SBlevel->setValue(double(value));
+}
+

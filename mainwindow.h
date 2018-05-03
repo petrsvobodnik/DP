@@ -67,6 +67,11 @@ private slots:
     void on_SBtreshold_valueChanged(int);
     void on_checkBoxLineVisible_toggled(bool checked);
 
+    void setLEgainRFU();
+    void on_checkBoxFinishSave_toggled(bool checked);
+
+    void on_LEfinishSave_textEdited(const QString &arg1);
+
 private:
     void defineWindow(double[], int );
     void plot(double dataY[], double dataX[], int N, int graphID, bool switchOrder);

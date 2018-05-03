@@ -137,6 +137,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->bandUsage->xAxis->setRange(0, N);
     ui->bandUsage->replot();
 
+
+
     ui->RBgroup_freqUnits->setId(ui->RBhz, 0);
     ui->RBgroup_freqUnits->setId(ui->RBkhz, 1);
     ui->RBgroup_freqUnits->setId(ui->RBmhz, 2);
@@ -151,8 +153,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->xAxis->setLabel("Frequency [" + ui->RBgroup_freqUnits->checkedButton()->text() + "]");
     ui->SBfreq->setValue(double(hackConfig.rxFreq)/freqUnits);
 
-
-
+    ui->labelSavedSamples->hide();
+    ui->LEfinishSave->setDisabled(true);
     this->setMinimumSize(900, 700);
 
     defineWindow(fftFiltr,ui->CBwinShape->currentIndex());
@@ -160,6 +162,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->SBtreshold, SIGNAL(valueChanged(int)), ui->SliderTreshold, SLOT(setValue(int)));
     connect(ui->SliderTreshold, SIGNAL(valueChanged(int)), ui->SBtreshold, SLOT(setValue(int)));
     connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(doFFT()));
+    connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(setLEgainRFU()));
 }
 
 // GUI destructor
@@ -200,6 +203,7 @@ void MainWindow::on_PBConnect_clicked()
             ui->statusBar->showMessage("Connected");
             ui->RBmhz->setChecked(true);
             RBunits_changed(2);
+            setLEgainRFU();
 
             // making sure to set zero gains of Hack's amplifiers
             hackrf_set_vga_gain(hackConfig.radioID, 0);
@@ -341,7 +345,7 @@ void MainWindow::doFFT(){
     fftwf_plan FFTplan = fftwf_plan_dft_1d(N,xf,y,FFTW_FORWARD,FFTW_ESTIMATE);
     fftwf_execute(FFTplan);
     for (int i=0; i<N; i++){
-        spectrum[i] = 5*log10(y[i][REAL]*y[i][REAL] + y[i][IMAG]*y[i][IMAG] ) + hackConfig.RFUgain- 100; // computing w/o sqrt and pow
+        spectrum[i] = 5*log10(y[i][REAL]*y[i][REAL] + y[i][IMAG]*y[i][IMAG] ) - hackConfig.RFUgain- 100; // computing w/o sqrt and pow
         // (-100) je dummy hodnota, aby se to tvarilo, ze to odpovida
         //  hackConfig.RFUgain is the total gain of RFU unit - in default 0dB
         samples[i] = (hackConfig.rxFreq - hackConfig.sampleRate/2 + (hackConfig.sampleRate/N)*i)/freqUnits;  // Assign frequency to FFT data
@@ -460,6 +464,10 @@ void MainWindow::saveMeasuredData(double FFTdata[]){        // saving data itsel
     QString labelText = ui->labelSaving->text().left(ui->labelSaving->text().lastIndexOf("\n")+1);
     QFile fileInput(saveFileName);
 
+    // this allows saving defined count of samples
+    if (ui->checkBoxFinishSave->isChecked() && saveCounter == ui->LEfinishSave->text().toInt())
+        on_PBsaveStop_clicked();
+
     if (fileInput.open(QIODevice::WriteOnly| QIODevice::Append)){
         QTextStream textStream (&fileInput);
         textStream.setRealNumberPrecision(4);
@@ -546,9 +554,13 @@ void MainWindow::on_PBsaveStop_clicked()
     if (saveEnabled){
         saveEnabled = false;
         ui->SBfreq->setDisabled(false);
-        ui->PBsaveStart->setDisabled(false);
+//        ui->PBsaveStart->setDisabled(false);
         ui->GBfreqUnits->setDisabled(false);
-        ui->PBsaveStop->setDisabled(true);
+        ui->PBsaveStop->setCheckable(true);
+        ui->PBsaveStop->setChecked(true);
+        ui->PBassignFileName->setDisabled(false);
+        ui->PBchooseDir->setDisabled(false);
+        ui->checkBoxFinishSave->setChecked(false);
         ui->labelSaving->hide();
 
         QFile fileInput(saveFileName);
@@ -557,6 +569,7 @@ void MainWindow::on_PBsaveStop_clicked()
         QString info = "Saving succesful\nFile: " + saveFileName + "\nNo. of records: " + QString::number(saveCounter) + "\nFile size: " + QString::number( fileInput.size()/1023) + "kB";
         QMessageBox::information(this,"Saving finished", info);\
         saveFileName = "";
+        ui->LEfileName->setText(saveFileName);
     }
 }
 
@@ -705,3 +718,19 @@ void MainWindow::on_checkBoxLineVisible_toggled(bool checked)
     ui->fftGraph->replot();
 }
 
+void MainWindow::setLEgainRFU(){
+    ui->LEgainRFU->setText(QString::number(hackConfig.RFUgain));
+}
+
+void MainWindow::on_checkBoxFinishSave_toggled(bool checked)
+{
+    ui->LEfinishSave->setDisabled(!checked);
+}
+
+void MainWindow::on_LEfinishSave_textEdited(const QString &arg1)
+{
+    if (arg1.toDouble() < saveCounter)
+        ui->labelSavedSamples->show();
+    else
+        ui->labelSavedSamples->hide();
+}

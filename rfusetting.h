@@ -29,6 +29,8 @@ private slots:
     void computeGain();
     void on_PBconnectAR_clicked();
     void on_PBconnectAU_clicked();
+    void on_SBlevel_valueChanged(double arg1);
+    void on_ATTslider_valueChanged(int value);
 
 public slots:
     void RBgroupLEVEL_clicked(int );
