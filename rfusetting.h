@@ -32,12 +32,18 @@ private slots:
     void on_SBlevel_valueChanged(double arg1);
     void on_ATTslider_valueChanged(int value);
 
+    void on_PBdisconnectAR_clicked();
+
+    void on_PBdisconnectAU_clicked();
+
+    void on_PBreloadFreq_clicked();
+
 public slots:
     void RBgroupLEVEL_clicked(int );
     void RBgroupANT_clicked(int );
     void RBgroupFILT_clicked (int);
-    void getRotatorState();
-
+    void getRotatorState();    
+    void ARreadAngle();
 
 private:
     Ui::RFUsetting *ui;

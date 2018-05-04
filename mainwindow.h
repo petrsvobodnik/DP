@@ -50,8 +50,6 @@ private slots:
     void on_PBConnect_clicked();
     void on_PBfftSettings_clicked();
     void on_PBrfuSetting_clicked();
-    void on_SBupperRange_valueChanged(int arg1);
-
     void doFFT();
     void on_PBchooseDir_clicked();
     void on_PBassignFileName_clicked();
@@ -66,11 +64,12 @@ private slots:
     void on_SBfreq_valueChanged(double arg1);
     void on_SBtreshold_valueChanged(int);
     void on_checkBoxLineVisible_toggled(bool checked);
-
     void setLEgainRFU();
     void on_checkBoxFinishSave_toggled(bool checked);
-
     void on_LEfinishSave_textEdited(const QString &arg1);
+    void changePlotRange(QCPRange newRange);
+    void on_SliderAddConstant_valueChanged(int value);
+    void RBunits_changed(int index);
 
 private:
     void defineWindow(double[], int );
@@ -92,9 +91,7 @@ public:
     //!!! This is bad. this doesn't have to be atomic!!
     static volatile int data_ready;
 
-
 public slots:
-    void RBunits_changed(int index);
 };
 
 #endif // MAINWINDOW_H

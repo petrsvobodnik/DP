@@ -102,7 +102,7 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
 
     connect(ui->SBtreshold, SIGNAL(valueChanged(int)), ui->SliderTreshold, SLOT(setValue(int)));
     connect(ui->SliderTreshold, SIGNAL(valueChanged(int)), ui->SBtreshold, SLOT(setValue(int)));
-    connect(ui->graphWidget->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(rangeChanged(QCPRange)));
+    connect(ui->graphWidget->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(spectrumRangeChanged(QCPRange)));
     connect(colorMap1, SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(WFupdateSBRange(QCPRange)));
 
 }

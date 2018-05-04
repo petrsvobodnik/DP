@@ -93,9 +93,9 @@ MainWindow::MainWindow(QWidget *parent) :
     tresholdLine->setVisible(false);
     tresholdLine->setPen(QPen(Qt::red));
 
-    // Y-axis range changing
-    ui->SBupperRange->setValue(ui->fftGraph->yAxis->range().upper);
-    ui->SBupperRange->setDisabled(true);
+    // Spectrum's Y-axis range changing
+//    ui->LEupperWF->setText(QString::number(ui->fftGraph->yAxis->range().upper));
+
 
     ui->labelSaving->hide();
     ui->labelFileExists->hide();
@@ -163,6 +163,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->SliderTreshold, SIGNAL(valueChanged(int)), ui->SBtreshold, SLOT(setValue(int)));
     connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(doFFT()));
     connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(setLEgainRFU()));
+    connect(ui->fftGraph->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(changePlotRange(QCPRange)));
+    connect(ui->waterfall->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(changePlotRange(QCPRange)));
 }
 
 // GUI destructor
@@ -185,16 +187,16 @@ void MainWindow::on_PBConnect_clicked()
     // loading list of connected devices
     hackrf_device_list_t* deviceList = hackrf_device_list();
     const char *SN = *deviceList->serial_numbers;
+    QString messageNotConnected = "Connection to HackRF failed!\n\nPossible reasons:\n- radio is not connected (check USB LED)\n- another instance of this app is already running";
 
     if(!hackConfig.hackrf_connected){
         if(hackrf_open_by_serial(SN, &hackConfig.radioID)!= HACKRF_SUCCESS) // radio is being identified by its SN
-            QMessageBox::warning(this, "Not connected!", "No HackRF device found");
+            QMessageBox::warning(this, "Not connected!", messageNotConnected);
 
         else{
             // activation of GUI buttons
             std::cout << "connected to: "<< SN+16 << std::endl;
             ui->PBstartRX->setDisabled(false);
-            ui->SBupperRange->setDisabled(false);
             ui->PBConnect->setText("Connected");
             ui->SBfreq->setDisabled(false);
             ui->GBfreqUnits->setDisabled(false);
@@ -237,11 +239,14 @@ void MainWindow::on_PBstartRX_clicked()
     hackrf_start_rx(hackConfig.radioID, data_cb, NULL);
     guiRefresh.start(500);
 
+    ui->LEupperWF->setText(QString::number(ui->fftGraph->yAxis->range().upper));
+    ui->SliderColorScale->setValue(ui->fftGraph->yAxis->range().upper);
     ui->PBstartRX->setChecked(true);
-
     ui->PBstopRX->setDisabled(false);
     ui->fftGraph->setInteraction(QCP::iRangeZoom, false);
     ui->fftGraph->setInteraction(QCP::iRangeDrag, false);
+    ui->waterfall->setInteraction(QCP::iRangeZoom, false);
+    ui->waterfall->setInteraction(QCP::iRangeDrag, false);
 }
 
 void MainWindow::on_PBstopRX_clicked()
@@ -256,6 +261,11 @@ void MainWindow::on_PBstopRX_clicked()
     ui->fftGraph->setInteraction(QCP::iRangeDrag, true);
     ui->fftGraph->axisRect()->setRangeDrag(Qt::Horizontal);
     ui->fftGraph->axisRect()->setRangeZoom(Qt::Horizontal);
+
+    ui->waterfall->setInteraction(QCP::iRangeZoom, true);
+    ui->waterfall->setInteraction(QCP::iRangeDrag, true);
+    ui->waterfall->axisRect()->setRangeDrag(Qt::Horizontal);
+    ui->waterfall->axisRect()->setRangeZoom(Qt::Horizontal);
 }
 
 
@@ -269,11 +279,7 @@ void MainWindow::on_SBfreq_valueChanged(double arg1)
 }
 
 
-void MainWindow::on_SBupperRange_valueChanged(int arg1)
-{
-    ui->fftGraph->yAxis->setRangeUpper(arg1);
-    ui->fftGraph->replot();
-}
+
 
 int data_cb(hackrf_transfer* trn){
     // callback function for data reception from Hack
@@ -386,24 +392,19 @@ void MainWindow::setWaterfallData()
 
                 if( i<(WFlen-1))    // shift existing data
                      colorMap->data()->setCell(j, i, colorMap->data()->cell(j, i+1));
+
                 else        // Add new data
                 {
-                //    adding ui->SliderScaling->value ensures color offset in waterfall diagram
+                //    adding ui->SliderAddConstant->value ensures color offset in waterfall diagram
                     if (j<N/2)     // switching the left and right half of WF diagram, so center frequency is in the middle
-                        colorMap->data()->setCell(j+N/2, WFlen-1, spectrum[j] + ui->SliderScaling->value());
+                        colorMap->data()->setCell(j+N/2, WFlen-1, spectrum[j] + ui->SliderAddConstant->value());
                     else
-                        colorMap->data()->setCell(j-N/2, WFlen-1, spectrum[j] + ui->SliderScaling->value());
+                        colorMap->data()->setCell(j-N/2, WFlen-1, spectrum[j] + ui->SliderAddConstant->value());
                 }
-
-                // Code for shifting WF diagram from bottom up (instead of down)
-//                    colorMap->data()->setCell(j, WFlen-i, colorMap->data()->cell(j, WFlen-i-1));
-//                else
-//                    colorMap->data()->setCell(j, 1, spectrum[j]);
             }
         }
 
     ui->waterfall->rescaleAxes();
-    on_SliderColorScale_valueChanged(ui->SBupperWF->value());
     ui->waterfall->replot();
 }
 
@@ -413,7 +414,7 @@ void MainWindow::defineWindow(double fftWindow[], int typ){
     case 0: // Rectangle
         for (int i=0; i<N; i++)
             fftWindow[i]=1;
-                    break;
+        break;
 
     case 1: // Hamming
         for (int i=0; i<N; i++)
@@ -602,7 +603,7 @@ void MainWindow::on_SliderColorScale_valueChanged(int value)    // changing rang
 {
     colorMap->setDataRange(QCPRange(-100, value));
     ui->waterfall->replot();
-    ui->SBupperWF->setValue(value);
+    ui->LEupperWF->setText(QString::number(value));
 
 }
 
@@ -733,4 +734,19 @@ void MainWindow::on_LEfinishSave_textEdited(const QString &arg1)
         ui->labelSavedSamples->show();
     else
         ui->labelSavedSamples->hide();
+}
+
+
+void MainWindow::changePlotRange(QCPRange newRange){
+    ui->waterfall->xAxis->setRange(newRange);
+    ui->waterfall->replot();
+
+    ui->fftGraph->xAxis->setRange(newRange);
+    ui->fftGraph->replot();
+}
+
+void MainWindow::on_SliderAddConstant_valueChanged(int value)
+{
+    ui->LEaddConstantWF->setText(QString::number(value));
+
 }

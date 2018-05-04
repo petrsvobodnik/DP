@@ -6,7 +6,7 @@
 #include <QtSerialPort/QSerialPortInfo>
 
 extern radio_config hackConfig;
-QSerialPort portAR, portAU;
+QSerialPort *portAR, *portAU;
 QTimer readPositionTimer;
 QVector<double> filtFreq, filtVal, antFreq, antVal, ampFreq, ampVal;
 
@@ -26,6 +26,8 @@ RFUsetting::RFUsetting(QWidget *parent) :
     ui->RBgroupLEVEL->setId(ui->RBlevelATT, 2);
     ui->RBgroupLEVEL->setId(ui->RBlevelBypass, 3);
     ui->RBgroupLEVEL->setId(ui->RBlevelfree, 4);
+    ui->SBlevel->setRange(-100, 100);
+    ui->ATTslider->hide();
 
     ui->RBgroupPOLARISATION->setId(ui->RBpolarisationH, 1);
     ui->RBgroupPOLARISATION->setId(ui->RBpolarisationV, 2);
@@ -53,16 +55,8 @@ RFUsetting::RFUsetting(QWidget *parent) :
     connect(ui->LEantGain, SIGNAL(textChanged(QString)), this, SLOT(computeGain()));
     connect(ui->LEfiltGain, SIGNAL(textChanged(QString)), this, SLOT(computeGain()));
 
-
-//    ui->RBant1->setChecked(true);
-//    ui->LEantGain->setText(QString::number(0));
-
-//    ui->RBlevelATT->setChecked(true);
-//    ui->SBlevel->setValue(-55);
     ui->SBazimuth->setValue(0);
 
-//    ui->RBfiltBypass->setChecked(true);
-//    ui->LEfiltGain->setText(QString::number(0));
     ui->LEfiltGain->setReadOnly(true);
     ui->LEtotalGain->setAlignment(Qt::AlignCenter);
     ui->LEtotalGain->setReadOnly(true);
@@ -87,21 +81,14 @@ RFUsetting::RFUsetting(QWidget *parent) :
     ui->CBserialPortAR->addItems(listOfPorts);
     ui->CBserialPortAU->addItems(listOfPorts);
 
-//    if (portInfo.length()==0){
-//        qDebug() << "Names of ports are made up";
-//        ui->CBserialPortAR->addItem("COM1");
-//        ui->CBserialPortAR->addItem("COM2");
-//        ui->CBserialPortAR->addItem("COM3");
-//    }
-
     connect(&readPositionTimer, SIGNAL(timeout()), this, SLOT(getRotatorState()));
 }
 
 RFUsetting::~RFUsetting()
 {
     delete ui;
-    portAR.close();
-    portAU.close();
+    portAR->close();
+//    portAU.close();
 }
 
 void RFUsetting::on_PBok_clicked()
@@ -111,8 +98,6 @@ void RFUsetting::on_PBok_clicked()
         on_PBgetGain_clicked();     // calling the function for changing of unit's settings
     }
 
-
-    qDebug() << "RFU's gain is: " << hackConfig.RFUgain;
     this->close();
 }
 
@@ -125,11 +110,31 @@ void RFUsetting::on_PBgetGain_clicked() // SET ALL
         hackConfig.RFUgain = ui->LEtotalGain->text().toFloat();
 //    This  button will set  RF unit -- will send commands to microcontroller
 
+        QByteArray antenna, filter, level, att;
+        antenna.setNum(ui->RBgroupANT->checkedId());
+        antenna.prepend("ANT");
+        portAU->write(antenna);
+
+        filter.setNum(ui->RBgroupFILT->checkedId());
+        filter.prepend("FILT");
+        portAU->write(filter);
+
+        level.setNum(ui->RBgroupLEVEL->checkedId());
+        level.prepend("AA");
+        portAU->write(level);
+
+        att.setNum(ui->ATTslider->value());
+        if (ui->ATTslider->value()<10)
+            att.prepend("SETATT0");
+        else
+            att.prepend("SETATT");
+        portAU->write(att);
 }
 
 void RFUsetting::on_PBstopRotator_clicked()
 {
-    // send command S, pak zjistit stav a obnovit SBazimuth
+    // send command S
+    portAR->write("S");
     getRotatorState();
 }
 
@@ -137,19 +142,23 @@ void RFUsetting::on_PBstopRotator_clicked()
 void RFUsetting::on_PBsetRotator_clicked()
 {
     // send W xxx yyy for setting the angles (xxx = Azim. Angle; yyy = Elev. Angle). Example: W350 163
-    int x = 360; // range of azimuth rotation
-    int xx = ui->SBazimuth->value();    // help variable
-    int xxx;
+    int newValue = ui->SBazimuth->value();
 
+    if (newValue<0)
+        newValue += 360;
 
-    if (xx>=0)
-        xxx = xx * 1024/x;
+    QByteArray angle;
+    angle.setNum(newValue);
+    if (newValue <10)
+        angle.prepend("M00");
+    else if (newValue<100)
+        angle.prepend("M0");
     else
-        xxx = (xx+360) * 1024/x;
+        angle.prepend("M");
 
-//    port.write("M"+QString::number(xxx));
+    qDebug() << "angle " << angle;
 
-    qDebug() << "Azimuth: " << xxx ;
+    portAR->write(angle);
 }
 
 
@@ -157,7 +166,7 @@ void RFUsetting::on_PBrotLEFT_pressed()
 {
     // L timerem cyklicky obnovovat hodnotu azimutu
     ui->label_6->show();
-    portAR.write("L");
+    portAR->write("L");
     readPositionTimer.start(200);
 }
 
@@ -165,7 +174,7 @@ void RFUsetting::on_PBrotLEFT_released()
 {
     // send S
     ui->label_6->hide();
-    portAR.write("S");
+    portAR->write("S");
     readPositionTimer.stop();
 }
 
@@ -173,7 +182,7 @@ void RFUsetting::on_PBrotRIGHT_pressed()
 {
     // R
     ui->label_6->show();
-    portAR.write("R");
+    portAR->write("R");
     readPositionTimer.start(200);
 }
 
@@ -181,7 +190,7 @@ void RFUsetting::on_PBrotRIGHT_released()
 {
     // send S
     ui->label_6->hide();
-    portAR.write("S");
+    portAR->write("S");
     readPositionTimer.stop();
 }
 
@@ -189,6 +198,7 @@ void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
 
     switch (button) {
     case 1: // AMP        
+        ui->SBlevel->setRange(-55, 100);
         ui->SBlevel->setReadOnly(true);
         ui->ATTslider->hide();
 
@@ -198,7 +208,6 @@ void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
         break;
 
     case 2: // ATT
-        ui->ATTslider->setMaximum(0);
         ui->SBlevel->setRange(-55,0);
         ui->SBlevel->setReadOnly(false);
         ui->SBlevel->setValue(-55);
@@ -206,25 +215,24 @@ void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
         break;
 
     case 3: // Bypass
+        ui->SBlevel->setRange(-55, 100);
         ui->SBlevel->setReadOnly(true);
-        ui->ATTslider->hide();
         ui->SBlevel->setValue(0);
+        ui->ATTslider->hide();
         break;
 
-    case 4:
+    case 4: // free port
+        ui->SBlevel->setRange(-55, 100);
         ui->SBlevel->setReadOnly(false);
         ui->SBlevel->setValue(0);
-        ui->SBlevel->setRange(-50, 50);
         ui->ATTslider->hide();
 
     default:
         break;
-
     }
 }
 
 void RFUsetting::RBgroupANT_clicked(int button){
-    // tady bude potreba znat parametry anteny a volat fci, ktera vypocita zisk
     ui->LEantGain->setReadOnly(true);
     QString nameOfFile;
 
@@ -318,42 +326,62 @@ void RFUsetting::on_PBconnectAR_clicked()
 {
     ui->GBazimuth->setDisabled(false);
 //    QMessageBox::information(this, "Connection established", "Connected to "+ui->CBserialPortAR->currentText());
-    // rovnou vycist uhel natoceni rotatoru a polarizaci
+    portAR = new QSerialPort(this);
+    portAR->setPortName(ui->CBserialPortAR->currentText());
+    portAR->setBaudRate(QSerialPort::Baud9600);
+    portAR->setDataBits(QSerialPort::Data8);
+    portAR->setParity(QSerialPort::NoParity);
+    portAR->setStopBits(QSerialPort::TwoStop);
+    portAR->setFlowControl(QSerialPort::NoFlowControl);
 
-    portAR.open(QIODevice::ReadWrite);
-    portAR.setPortName(ui->CBserialPortAR->currentText());
-    portAR.setBaudRate(QSerialPort::Baud9600);
-    portAR.setDataBits(QSerialPort::Data8);
-    portAR.setParity(QSerialPort::NoParity);
-    portAR.setStopBits(QSerialPort::OneStop);
-    portAR.setFlowControl(QSerialPort::NoFlowControl);
+    if (portAR->open(QIODevice::ReadWrite)){
+        QMessageBox::information(this, "Connection established", "Connected to "+ui->CBserialPortAR->currentText());
 
-    portAR.write("hello");
-    //    getRotatorState();
+        ui->CBserialPortAR->setDisabled(true);
+        ui->PBconnectAR->setDisabled(true);
 
+        getRotatorState();
+    }
+    else
+        QMessageBox::warning(this, "RF unit not connected", portAR->errorString());
 }
+
+
 
 void RFUsetting::on_PBconnectAU_clicked()
 {
-    QMessageBox::information(this, "Connection established", "Connected to "+ui->CBserialPortAU->currentText());
-    // rovnou vycist uhel natoceni rotatoru a polarizaci
+    portAU = new QSerialPort(this);
+    portAU->setPortName(ui->CBserialPortAU->currentText());
+    portAU->setBaudRate(QSerialPort::Baud9600);
+    portAU->setDataBits(QSerialPort::Data8);
+    portAU->setParity(QSerialPort::NoParity);
+    portAU->setStopBits(QSerialPort::TwoStop);
+    portAU->setFlowControl(QSerialPort::NoFlowControl);
 
-    portAU.setPortName(ui->CBserialPortAU->currentText());
-    portAU.open(QIODevice::ReadWrite);
-    portAU.setBaudRate(QSerialPort::Baud9600);
-    portAU.setDataBits(QSerialPort::Data8);
-    portAU.setParity(QSerialPort::NoParity);
-    portAU.setStopBits(QSerialPort::OneStop);
-    portAU.setFlowControl(QSerialPort::NoFlowControl);
+    if (portAU->open(QIODevice::ReadWrite)){
+        QMessageBox::information(this, "Connection established", "Connected to "+ui->CBserialPortAU->currentText());
 
+        ui->CBserialPortAU->setDisabled(true);
+        ui->PBconnectAU->setDisabled(true);
+    }
+    else
+        QMessageBox::warning(this, "RF unit not connected", portAU->errorString());
 }
 
 
 void RFUsetting::getRotatorState(){
-//    int readAngle;
-    portAR.write("C");
-    // osetrit cteni z portu a nastaveni hodnoty do GUI
-//    ui->SBazimuth->setValue(readAngle/1024*360);
+    connect(portAR, SIGNAL(readyRead()), this, SLOT(ARreadAngle()));
+    portAR->write("C");
+
+
+}
+
+void RFUsetting::ARreadAngle(){
+   QString text = portAR->readAll();
+   qDebug() << text;
+//   ui->SBazimuth->setValue(int(text.toInt()/1023*360));
+
+   disconnect(portAR, SIGNAL(readyRead()), this, SLOT(ARreadAngle()));
 }
 
 void RFUsetting::readParameters(QString name, QVector<double> *freq, QVector<double> *val){
@@ -420,3 +448,25 @@ void RFUsetting::on_ATTslider_valueChanged(int value)
     ui->SBlevel->setValue(double(value));
 }
 
+
+void RFUsetting::on_PBdisconnectAR_clicked()
+{
+    portAR->close();
+    ui->CBserialPortAR->setDisabled(false);
+    ui->PBconnectAR->setDisabled(false);
+}
+
+void RFUsetting::on_PBdisconnectAU_clicked()
+{
+    portAU->close();
+    ui->CBserialPortAU->setDisabled(false);
+    ui->PBconnectAU->setDisabled(false);
+}
+
+void RFUsetting::on_PBreloadFreq_clicked()
+{
+    ui->LEfreq->setText(QString::number(hackConfig.rxFreq/1000));
+    RBgroupANT_clicked(ui->RBgroupANT->checkedId());
+    RBgroupFILT_clicked(ui->RBgroupFILT->checkedId());
+    RBgroupLEVEL_clicked(ui->RBgroupLEVEL->checkedId());
+}
