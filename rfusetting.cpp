@@ -70,7 +70,10 @@ RFUsetting::RFUsetting(QWidget *parent) :
     connect(ui->SBswitchLoss, SIGNAL(valueChanged(double)), this, SLOT(computeGain()));
     connect(ui->SBswitchCount, SIGNAL(valueChanged(int)), this, SLOT(computeGain()));
 
+    ui->PBdisconnectAU->setDisabled(true);
+    ui->PBdisconnectAR->setDisabled(true);
 
+    ui->GBparameters->setDisabled(true);
     ui->GBpolarisation->setDisabled(true);
     ui->GBazimuth->setDisabled(true);
 
@@ -123,7 +126,7 @@ void RFUsetting::on_PBgetGain_clicked() // SET ALL
         level.prepend("AA");
         portAU->write(level);
 
-        att.setNum(ui->ATTslider->value());
+        att.setNum(int(ui->ATTslider->value()));
         if (ui->ATTslider->value()<10)
             att.prepend("SETATT0");
         else
@@ -339,6 +342,7 @@ void RFUsetting::on_PBconnectAR_clicked()
 
         ui->CBserialPortAR->setDisabled(true);
         ui->PBconnectAR->setDisabled(true);
+        ui->PBdisconnectAR->setDisabled(false);
 
         getRotatorState();
     }
@@ -363,6 +367,8 @@ void RFUsetting::on_PBconnectAU_clicked()
 
         ui->CBserialPortAU->setDisabled(true);
         ui->PBconnectAU->setDisabled(true);
+        ui->PBdisconnectAU->setDisabled(false);
+        ui->GBparameters->setDisabled(false);
     }
     else
         QMessageBox::warning(this, "RF unit not connected", portAU->errorString());
@@ -454,6 +460,7 @@ void RFUsetting::on_PBdisconnectAR_clicked()
     portAR->close();
     ui->CBserialPortAR->setDisabled(false);
     ui->PBconnectAR->setDisabled(false);
+    ui->GBazimuth->setDisabled(true);
 }
 
 void RFUsetting::on_PBdisconnectAU_clicked()
@@ -461,6 +468,7 @@ void RFUsetting::on_PBdisconnectAU_clicked()
     portAU->close();
     ui->CBserialPortAU->setDisabled(false);
     ui->PBconnectAU->setDisabled(false);
+    ui->GBparameters->setDisabled(true);
 }
 
 void RFUsetting::on_PBreloadFreq_clicked()

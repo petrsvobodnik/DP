@@ -8,7 +8,6 @@
 #include "qcustomplot.h"
 #include "freqsetting.h"
 #include "rfusetting.h"
-#include <srsgui/srsgui.h>
 
 #define MHz 1000000
 #define GHz 1000000000
@@ -48,7 +47,6 @@ private slots:
     void on_PBstopRX_clicked();
     void on_PBExit_clicked();
     void on_PBConnect_clicked();
-    void on_PBfftSettings_clicked();
     void on_PBrfuSetting_clicked();
     void doFFT();
     void on_PBchooseDir_clicked();
@@ -70,6 +68,12 @@ private slots:
     void changePlotRange(QCPRange newRange);
     void on_SliderAddConstant_valueChanged(int value);
     void RBunits_changed(int index);
+    void on_PBsetSDR_clicked();
+
+    void on_SBupperRange_valueChanged(int arg1);
+
+
+    void on_SBlowerRange_valueChanged(int arg1);
 
 private:
     void defineWindow(double[], int );
@@ -88,7 +92,6 @@ private:
 
 public:
     QTimer guiRefresh;
-    //!!! This is bad. this doesn't have to be atomic!!
     static volatile int data_ready;
 
 public slots:

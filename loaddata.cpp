@@ -47,12 +47,12 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
     colorMap1->data()->setSize(noOfCol, noOfRow);
     ui->waterfallWidget->yAxis->setRangeReversed(true);
 
-    QCPColorScale *colorScale = new QCPColorScale(ui->waterfallWidget);
-    ui->waterfallWidget->plotLayout()->addElement(0, 1, colorScale);
-    colorScale->setType(QCPAxis::atRight);
-    colorScale->setGradient(QCPColorGradient::gpSpectrum);
-    colorScale->setDataRange(QCPRange(-100, 0));
-    colorMap1->setColorScale(colorScale);
+//    QCPColorScale *colorScale = new QCPColorScale(ui->waterfallWidget);
+//    ui->waterfallWidget->plotLayout()->addElement(0, 1, colorScale);
+//    colorScale->setType(QCPAxis::atRight);
+//    colorScale->setGradient(QCPColorGradient::gpSpectrum);
+//    colorScale->setDataRange(QCPRange(-100, 0));
+//    colorMap1->setColorScale(colorScale);
     ui->waterfallWidget->xAxis->setLabel("Frequency [kHz]");
 
 
@@ -62,9 +62,9 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
     ui->waterfallWidget->yAxis->setTicker(dateTicker);
 
     // Align y axis and colorscale with both top and bottom
-    QCPMarginGroup *marginGroup = new QCPMarginGroup(ui->waterfallWidget);
-    ui->waterfallWidget->axisRect()->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
-    colorScale->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
+//    QCPMarginGroup *marginGroup = new QCPMarginGroup(ui->waterfallWidget);
+//    ui->waterfallWidget->axisRect()->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
+//    colorScale->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
 
     timeLine = new QCPItemLine(ui->waterfallWidget);
     timeLine->setPen(QPen(Qt::red));
@@ -423,7 +423,7 @@ void LoadData::WFupdateSBRange(QCPRange newRange){
 
 void LoadData::on_PBrescaleWF_clicked()
 {
-    ui->waterfallWidget->rescaleAxes();
     colorMap1->rescaleDataRange();
+    ui->waterfallWidget->rescaleAxes();
     ui->waterfallWidget->replot();
 }

@@ -87,14 +87,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fftGraph->yAxis2->setVisible(false);
 
 
-    ui->fftGraph->legend->setVisible(true);
 
     tresholdLine = new QCPItemLine(ui->fftGraph);
     tresholdLine->setVisible(false);
     tresholdLine->setPen(QPen(Qt::red));
-
-    // Spectrum's Y-axis range changing
-//    ui->LEupperWF->setText(QString::number(ui->fftGraph->yAxis->range().upper));
 
 
     ui->labelSaving->hide();
@@ -172,6 +168,9 @@ MainWindow::~MainWindow()
 {
 //   Disconnecting from radio
     if(hackConfig.hackrf_connected){
+        if (saveEnabled)
+            on_PBsaveStop_clicked();
+
         hackrf_stop_rx(hackConfig.radioID);
         hackrf_close(hackConfig.radioID);
         puts("Disconnected");
@@ -187,7 +186,7 @@ void MainWindow::on_PBConnect_clicked()
     // loading list of connected devices
     hackrf_device_list_t* deviceList = hackrf_device_list();
     const char *SN = *deviceList->serial_numbers;
-    QString messageNotConnected = "Connection to HackRF failed!\n\nPossible reasons:\n- radio is not connected (check USB LED)\n- another instance of this app is already running";
+    QString messageNotConnected = "Connection to HackRF failed!\n\nPossible reasons:\n- radio is not linked (check USB LED)\n- another instance of this app is already running";
 
     if(!hackConfig.hackrf_connected){
         if(hackrf_open_by_serial(SN, &hackConfig.radioID)!= HACKRF_SUCCESS) // radio is being identified by its SN
@@ -202,7 +201,7 @@ void MainWindow::on_PBConnect_clicked()
             ui->GBfreqUnits->setDisabled(false);
             ui->tabWidget->setDisabled(false);
             ui->CBsampleRate->setDisabled(false);
-            ui->statusBar->showMessage("Connected");
+//            ui->statusBar->showMessage("Connected");
             ui->RBmhz->setChecked(true);
             RBunits_changed(2);
             setLEgainRFU();
@@ -219,18 +218,9 @@ void MainWindow::on_PBConnect_clicked()
 
 void MainWindow::on_PBExit_clicked()
 {
-    if (saveEnabled)
-        on_PBsaveStop_clicked();
+
     on_PBstopRX_clicked();
     window()->close();
-}
-
-void MainWindow::on_PBfftSettings_clicked()
-{
-    // Displaying FreqSetting window
-    freqWindow = new freqSetting(this);
-    freqWindow->show();
-    ui->fftGraph->yAxis2->setVisible(true);
 }
 
 void MainWindow::on_PBstartRX_clicked()
@@ -351,9 +341,11 @@ void MainWindow::doFFT(){
     fftwf_plan FFTplan = fftwf_plan_dft_1d(N,xf,y,FFTW_FORWARD,FFTW_ESTIMATE);
     fftwf_execute(FFTplan);
     for (int i=0; i<N; i++){
-        spectrum[i] = 5*log10(y[i][REAL]*y[i][REAL] + y[i][IMAG]*y[i][IMAG] ) - hackConfig.RFUgain- 100; // computing w/o sqrt and pow
+        spectrum[i] = 5*log10(y[i][REAL]*y[i][REAL] + y[i][IMAG]*y[i][IMAG] ) - hackConfig.RFUgain
+                - (hackConfig.LNAgain + hackConfig.VGAgain)/2 - 100; // computing w/o sqrt and pow
         // (-100) je dummy hodnota, aby se to tvarilo, ze to odpovida
         //  hackConfig.RFUgain is the total gain of RFU unit - in default 0dB
+        // LNA+VGA are voltage amplifiers (not power amp.)
         samples[i] = (hackConfig.rxFreq - hackConfig.sampleRate/2 + (hackConfig.sampleRate/N)*i)/freqUnits;  // Assign frequency to FFT data
     }
 
@@ -529,6 +521,7 @@ void MainWindow::on_PBsaveStart_clicked()
     ui->PBassignFileName->setDisabled(true);
     ui->GBfreqUnits->setDisabled(true);
     ui->PBchooseDir->setDisabled(true);
+    ui->PBstopRX->setDisabled(true);
     ui->LEfileName->setReadOnly(true);
     ui->labelSaving->show();
     QString text = "Saving data\nStarted at: ";
@@ -557,9 +550,9 @@ void MainWindow::on_PBsaveStop_clicked()
         ui->SBfreq->setDisabled(false);
 //        ui->PBsaveStart->setDisabled(false);
         ui->GBfreqUnits->setDisabled(false);
-        ui->PBsaveStop->setCheckable(true);
-        ui->PBsaveStop->setChecked(true);
+        ui->PBsaveStop->setDisabled(true);
         ui->PBassignFileName->setDisabled(false);
+        ui->PBstopRX->setDisabled(false);
         ui->PBchooseDir->setDisabled(false);
         ui->checkBoxFinishSave->setChecked(false);
         ui->labelSaving->hide();
@@ -748,5 +741,26 @@ void MainWindow::changePlotRange(QCPRange newRange){
 void MainWindow::on_SliderAddConstant_valueChanged(int value)
 {
     ui->LEaddConstantWF->setText(QString::number(value));
+
+}
+
+void MainWindow::on_PBsetSDR_clicked()
+{
+    // Displaying FreqSetting window
+    freqWindow = new freqSetting(this);
+    freqWindow->setWindowTitle("Additional SDR settings");
+    freqWindow->show();
+    ui->fftGraph->yAxis2->setVisible(true);
+}
+
+void MainWindow::on_SBupperRange_valueChanged(int arg1)
+{
+    ui->fftGraph->yAxis->setRangeUpper(arg1);
+}
+
+
+void MainWindow::on_SBlowerRange_valueChanged(int arg1)
+{
+    ui->fftGraph->yAxis->setRangeLower(arg1);
 
 }

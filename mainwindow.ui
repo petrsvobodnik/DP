@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>900</width>
-    <height>700</height>
+    <height>649</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,7 +53,7 @@
      <string>pocet prubehu</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="PBfftSettings">
+   <widget class="QPushButton" name="PBsetSDR">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -533,17 +533,17 @@
    <widget class="QSpinBox" name="SBupperRange">
     <property name="geometry">
      <rect>
-      <x>802</x>
-      <y>35</y>
-      <width>47</width>
+      <x>793</x>
+      <y>20</y>
+      <width>51</width>
       <height>23</height>
      </rect>
     </property>
     <property name="buttonSymbols">
-     <enum>QAbstractSpinBox::PlusMinus</enum>
+     <enum>QAbstractSpinBox::UpDownArrows</enum>
     </property>
     <property name="minimum">
-     <number>-80</number>
+     <number>-75</number>
     </property>
     <property name="maximum">
      <number>10</number>
@@ -552,21 +552,20 @@
      <number>10</number>
     </property>
     <property name="value">
-     <number>-30</number>
+     <number>-20</number>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>800</x>
-      <y>-1</y>
-      <width>81</width>
-      <height>31</height>
+      <x>770</x>
+      <y>5</y>
+      <width>121</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Spectrum
-upper range</string>
+     <string>Spectrum range</string>
     </property>
    </widget>
    <widget class="QComboBox" name="CBhackSN">
@@ -694,10 +693,10 @@ upper range</string>
      </font>
     </property>
     <property name="minimum">
-     <number>-20</number>
+     <number>-25</number>
     </property>
     <property name="maximum">
-     <number>30</number>
+     <number>25</number>
     </property>
     <property name="singleStep">
      <number>5</number>
@@ -766,8 +765,8 @@ upper range</string>
    <widget class="QLabel" name="label_8">
     <property name="geometry">
      <rect>
-      <x>855</x>
-      <y>40</y>
+      <x>850</x>
+      <y>25</y>
       <width>41</width>
       <height>16</height>
      </rect>
@@ -832,7 +831,7 @@ upper range</string>
         <x>10</x>
         <y>180</y>
         <width>191</width>
-        <height>51</height>
+        <height>71</height>
        </rect>
       </property>
       <property name="palette">
@@ -1379,6 +1378,9 @@ Started at: </string>
       <height>22</height>
      </rect>
     </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLabel" name="label_5">
     <property name="geometry">
@@ -1445,26 +1447,71 @@ RFU gain</string>
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QLabel" name="label_15">
+    <property name="geometry">
+     <rect>
+      <x>850</x>
+      <y>45</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>dBm</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="SBlowerRange">
+    <property name="geometry">
+     <rect>
+      <x>793</x>
+      <y>40</y>
+      <width>51</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="buttonSymbols">
+     <enum>QAbstractSpinBox::UpDownArrows</enum>
+    </property>
+    <property name="minimum">
+     <number>-130</number>
+    </property>
+    <property name="maximum">
+     <number>-80</number>
+    </property>
+    <property name="singleStep">
+     <number>10</number>
+    </property>
+    <property name="value">
+     <number>-100</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_16">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>25</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>upper</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_17">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>45</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>lower</string>
+    </property>
+   </widget>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>900</width>
-     <height>19</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionSet_up_save_file">
    <property name="text">
     <string>Set up save file</string>
