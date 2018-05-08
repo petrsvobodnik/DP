@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>873</width>
+    <width>890</width>
     <height>455</height>
    </rect>
   </property>
@@ -342,7 +342,7 @@
     <rect>
      <x>310</x>
      <y>40</y>
-     <width>551</width>
+     <width>571</width>
      <height>371</height>
     </rect>
    </property>
@@ -390,7 +390,7 @@
      <rect>
       <x>0</x>
       <y>50</y>
-      <width>551</width>
+      <width>571</width>
       <height>321</height>
      </rect>
     </property>
@@ -400,8 +400,8 @@
     <widget class="QDoubleSpinBox" name="SBswitchLoss">
      <property name="geometry">
       <rect>
-       <x>400</x>
-       <y>70</y>
+       <x>440</x>
+       <y>90</y>
        <width>66</width>
        <height>23</height>
       </rect>
@@ -410,8 +410,8 @@
     <widget class="QLabel" name="label_8">
      <property name="geometry">
       <rect>
-       <x>400</x>
-       <y>50</y>
+       <x>440</x>
+       <y>70</y>
        <width>59</width>
        <height>14</height>
       </rect>
@@ -423,8 +423,8 @@
     <widget class="QGroupBox" name="GBrfLevel">
      <property name="geometry">
       <rect>
-       <x>250</x>
-       <y>20</y>
+       <x>290</x>
+       <y>30</y>
        <width>131</width>
        <height>251</height>
       </rect>
@@ -557,8 +557,8 @@
     <widget class="QLabel" name="label_9">
      <property name="geometry">
       <rect>
-       <x>480</x>
-       <y>50</y>
+       <x>510</x>
+       <y>70</y>
        <width>59</width>
        <height>14</height>
       </rect>
@@ -570,8 +570,8 @@
     <widget class="QPushButton" name="PBgetGain">
      <property name="geometry">
       <rect>
-       <x>410</x>
-       <y>201</y>
+       <x>440</x>
+       <y>230</y>
        <width>91</width>
        <height>51</height>
       </rect>
@@ -583,8 +583,8 @@
     <widget class="QLabel" name="label_7">
      <property name="geometry">
       <rect>
-       <x>400</x>
-       <y>30</y>
+       <x>440</x>
+       <y>50</y>
        <width>131</width>
        <height>16</height>
       </rect>
@@ -596,8 +596,8 @@
     <widget class="QGroupBox" name="GBfilter">
      <property name="geometry">
       <rect>
-       <x>120</x>
-       <y>20</y>
+       <x>160</x>
+       <y>30</y>
        <width>121</width>
        <height>251</height>
       </rect>
@@ -728,8 +728,8 @@
     <widget class="QLineEdit" name="LEtotalGain">
      <property name="geometry">
       <rect>
-       <x>410</x>
-       <y>131</y>
+       <x>440</x>
+       <y>151</y>
        <width>71</width>
        <height>51</height>
       </rect>
@@ -749,8 +749,8 @@
     <widget class="QLabel" name="label_5">
      <property name="geometry">
       <rect>
-       <x>490</x>
-       <y>140</y>
+       <x>520</x>
+       <y>160</y>
        <width>59</width>
        <height>31</height>
       </rect>
@@ -768,8 +768,8 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>20</y>
-       <width>101</width>
+       <y>30</y>
+       <width>141</width>
        <height>251</height>
       </rect>
      </property>
@@ -781,12 +781,12 @@
        <rect>
         <x>10</x>
         <y>90</y>
-        <width>100</width>
+        <width>121</width>
         <height>20</height>
        </rect>
       </property>
       <property name="text">
-       <string>ANT 3</string>
+       <string>ANT 3 - HL040E</string>
       </property>
       <attribute name="buttonGroup">
        <string notr="true">RBgroupANT</string>
@@ -797,12 +797,12 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>100</width>
+        <width>111</width>
         <height>20</height>
        </rect>
       </property>
       <property name="text">
-       <string>ANT 1</string>
+       <string>ANT 1 - HE040</string>
       </property>
       <attribute name="buttonGroup">
        <string notr="true">RBgroupANT</string>
@@ -813,12 +813,12 @@
        <rect>
         <x>10</x>
         <y>60</y>
-        <width>100</width>
+        <width>111</width>
         <height>20</height>
        </rect>
       </property>
       <property name="text">
-       <string>ANT 2</string>
+       <string>ANT 2 - HK309</string>
       </property>
       <attribute name="buttonGroup">
        <string notr="true">RBgroupANT</string>
@@ -839,12 +839,13 @@
        <rect>
         <x>10</x>
         <y>120</y>
-        <width>100</width>
-        <height>20</height>
+        <width>121</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>from file</string>
+       <string>ANT4 
+file / HL223</string>
       </property>
       <attribute name="buttonGroup">
        <string notr="true">RBgroupANT</string>
@@ -863,12 +864,27 @@
        <string>[dB]</string>
       </property>
      </widget>
+     <widget class="QLabel" name="label_13">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>160</y>
+        <width>121</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ANT4 - file dialog 
+opens, if canceled 
+HL223 is loaded</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QLabel" name="label_4">
      <property name="geometry">
       <rect>
-       <x>410</x>
-       <y>110</y>
+       <x>440</x>
+       <y>130</y>
        <width>59</width>
        <height>14</height>
       </rect>
@@ -880,8 +896,8 @@
     <widget class="QSpinBox" name="SBswitchCount">
      <property name="geometry">
       <rect>
-       <x>480</x>
-       <y>70</y>
+       <x>510</x>
+       <y>90</y>
        <width>47</width>
        <height>23</height>
       </rect>

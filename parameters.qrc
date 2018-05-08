@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>HE010E.txt</file>
+        <file>HK309.txt</file>
+        <file>HL040E.txt</file>
+        <file>HL223.txt</file>
+        <file>BS_FM.txt</file>
+        <file>BS_LTE.txt</file>
+        <file>HP.txt</file>
+        <file>LP.txt</file>
+        <file>AMP.txt</file>
+    </qresource>
+</RCC>

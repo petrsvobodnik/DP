@@ -96,10 +96,14 @@ RFUsetting::~RFUsetting()
 
 void RFUsetting::on_PBok_clicked()
 {
-    if (hackConfig.RFUgain != ui->LEtotalGain->text().toFloat()){
-        QMessageBox::information(this, "Parameters set", "Last change of antenna unit was set");
-        on_PBgetGain_clicked();     // calling the function for changing of unit's settings
+    if ((ui->RBgroupFILT->checkedId()!= -1) && (ui->RBgroupANT->checkedId()!= -1) && (ui->RBgroupLEVEL->checkedId()!= -1 )){
+        if (hackConfig.RFUgain != ui->LEtotalGain->text().toFloat()){
+
+            on_PBgetGain_clicked();     // calling the function for changing of unit's settings
+        }
     }
+    else
+        QMessageBox::information(this, "No change commited", "Changes discarded!");
 
     this->close();
 }
@@ -198,14 +202,16 @@ void RFUsetting::on_PBrotRIGHT_released()
 }
 
 void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
+    QString nameOfFile;
 
     switch (button) {
     case 1: // AMP        
         ui->SBlevel->setRange(-55, 100);
-        ui->SBlevel->setReadOnly(true);
         ui->ATTslider->hide();
 
-        readParameters(":/filters/data/Zes_0-6GHz.txt", &ampFreq, &ampVal);
+        readParameters(":/new/prefix1/AMP.txt", &ampFreq, &ampVal);
+        ui->SBlevel->setReadOnly(true);
+        ui->SBlevel->setValue(interpolateValue(&ampFreq, &ampVal));
         ui->SBlevel->setValue(interpolateValue(&ampFreq, &ampVal));
 
         break;
@@ -213,22 +219,32 @@ void RFUsetting::RBgroupLEVEL_clicked(int button){  // choice of RadioButtons
     case 2: // ATT
         ui->SBlevel->setRange(-55,0);
         ui->SBlevel->setReadOnly(false);
-        ui->SBlevel->setValue(-55);
         ui->ATTslider->show();
+        ui->SBlevel->setValue(-55);
+
         break;
 
     case 3: // Bypass
         ui->SBlevel->setRange(-55, 100);
+        ui->SBlevel->setValue(20);
         ui->SBlevel->setReadOnly(true);
-        ui->SBlevel->setValue(0);
         ui->ATTslider->hide();
+        ui->SBlevel->setValue(0);
+
         break;
 
     case 4: // free port
         ui->SBlevel->setRange(-55, 100);
         ui->SBlevel->setReadOnly(false);
-        ui->SBlevel->setValue(0);
         ui->ATTslider->hide();
+        nameOfFile = QFileDialog::getOpenFileName(this, "Select file...", QDir::homePath());
+
+        if (nameOfFile=="")
+            ui->SBlevel->setValue(30);
+        else{
+            readParameters(nameOfFile, &ampFreq, &ampVal);
+            ui->SBlevel->setValue(int(interpolateValue(&ampFreq, &ampVal)));
+        }
 
     default:
         break;
@@ -240,19 +256,19 @@ void RFUsetting::RBgroupANT_clicked(int button){
     QString nameOfFile;
 
     switch (button) {
-    case 1: // HK309
-        nameOfFile = ":/filters/data/anteny/HK309_0.2-1.3.txt";
+    case 1:  // HE010E
+        nameOfFile = ":/new/prefix1/HE010E.txt";
         break;
 
-    case 2: // HL223
-        nameOfFile = ":/filters/data/anteny/HL223_0.2-1.3.txt";
+    case 2: // HK309
+        nameOfFile = ":/new/prefix1/HK309.txt";
         break;
 
-    case 3:
-        nameOfFile = "";
+    case 3: //
+        nameOfFile = ":/new/prefix1/HL040E.txt";
         break;
 
-    case 4:
+    case 4: // file / HL223
         nameOfFile = QFileDialog::getOpenFileName(this, "Select file...", QDir::homePath());
         break;
 
@@ -260,13 +276,17 @@ void RFUsetting::RBgroupANT_clicked(int button){
         break;
     }
 
-    if (nameOfFile != ""){
-        readParameters(nameOfFile, &antFreq, &antVal);
-        double gain = interpolateValue(&antFreq, &antVal);
-        ui->LEantGain->setText(QString::number(gain, 'f', 1));
+    if (nameOfFile == ""){
+        QMessageBox::information(this, "Antenna selected", "Antenna HL223 selected");
+        nameOfFile = ":/new/prefix1/HL223.txt";
     }
-    else
-        ui->LEantGain->setText(QString::number(0));
+
+    readParameters(nameOfFile, &antFreq, &antVal);
+    double gain = interpolateValue(&antFreq, &antVal);
+
+    ui->LEantGain->setText(QString::number(gain, 'f', 1));
+
+
 
     computeGain();
 }
@@ -284,19 +304,19 @@ void RFUsetting::RBgroupFILT_clicked(int button){
         break;
 
     case 2: // LP
-        nameOfFile = ":/filters/data/filtry/LP_1GHz_0-6GHz.txt";
+        nameOfFile = ":/new/prefix1/LP.txt";
         break;
 
     case 3: // HP
-        nameOfFile = ":/filters/data/filtry/HP_1,1GHz_0-6GHz.txt";
+        nameOfFile = ":/new/prefix1/HP.txt";
         break;
 
     case 4: // BR FM
-        nameOfFile = ":/filters/data/filtry/BS_FM_0-6GHz.txt";
+        nameOfFile = ":/new/prefix1/BS_FM.txt";
         break;
 
     case 5: // BR LTE
-        nameOfFile = "";
+        nameOfFile = ":/new/prefix1/BS_LTE.txt";
         break;
 
     case 6: // free port
@@ -334,7 +354,7 @@ void RFUsetting::on_PBconnectAR_clicked()
     portAR->setBaudRate(QSerialPort::Baud9600);
     portAR->setDataBits(QSerialPort::Data8);
     portAR->setParity(QSerialPort::NoParity);
-    portAR->setStopBits(QSerialPort::TwoStop);
+    portAR->setStopBits(QSerialPort::OneStop);
     portAR->setFlowControl(QSerialPort::NoFlowControl);
 
     if (portAR->open(QIODevice::ReadWrite)){
@@ -359,7 +379,7 @@ void RFUsetting::on_PBconnectAU_clicked()
     portAU->setBaudRate(QSerialPort::Baud9600);
     portAU->setDataBits(QSerialPort::Data8);
     portAU->setParity(QSerialPort::NoParity);
-    portAU->setStopBits(QSerialPort::TwoStop);
+    portAU->setStopBits(QSerialPort::OneStop);
     portAU->setFlowControl(QSerialPort::NoFlowControl);
 
     if (portAU->open(QIODevice::ReadWrite)){

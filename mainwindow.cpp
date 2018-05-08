@@ -342,8 +342,7 @@ void MainWindow::doFFT(){
     fftwf_execute(FFTplan);
     for (int i=0; i<N; i++){
         spectrum[i] = 5*log10(y[i][REAL]*y[i][REAL] + y[i][IMAG]*y[i][IMAG] ) - hackConfig.RFUgain
-                - (hackConfig.LNAgain + hackConfig.VGAgain)/2 - 100; // computing w/o sqrt and pow
-        // (-100) je dummy hodnota, aby se to tvarilo, ze to odpovida
+                - (hackConfig.LNAgain + hackConfig.VGAgain)/2 - 44; // computing w/o sqrt and pow
         //  hackConfig.RFUgain is the total gain of RFU unit - in default 0dB
         // LNA+VGA are voltage amplifiers (not power amp.)
         samples[i] = (hackConfig.rxFreq - hackConfig.sampleRate/2 + (hackConfig.sampleRate/N)*i)/freqUnits;  // Assign frequency to FFT data
