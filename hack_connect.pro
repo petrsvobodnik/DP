@@ -4,6 +4,9 @@
 #
 #-------------------------------------------------
 
+CONFIG += staticlib
+QMAKE_RPATHDIR += /home/golem/Qt/5.9.3/gcc_64/lib
+
 QT       += core gui printsupport serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

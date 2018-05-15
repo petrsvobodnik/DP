@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1034</width>
-    <height>621</height>
+    <width>1050</width>
+    <height>620</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <rect>
      <x>180</x>
      <y>80</y>
-     <width>841</width>
+     <width>861</width>
      <height>231</height>
     </rect>
    </property>
@@ -28,7 +28,7 @@
     <rect>
      <x>180</x>
      <y>350</y>
-     <width>841</width>
+     <width>861</width>
      <height>221</height>
     </rect>
    </property>
@@ -186,7 +186,7 @@
     <rect>
      <x>180</x>
      <y>580</y>
-     <width>841</width>
+     <width>861</width>
      <height>16</height>
     </rect>
    </property>
@@ -212,7 +212,7 @@
     <rect>
      <x>180</x>
      <y>310</y>
-     <width>841</width>
+     <width>861</width>
      <height>41</height>
     </rect>
    </property>
@@ -544,6 +544,22 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>PBopenFile</tabstop>
+  <tabstop>LEfilename</tabstop>
+  <tabstop>SliderTime</tabstop>
+  <tabstop>LEtime</tabstop>
+  <tabstop>checkBoxLineVisible</tabstop>
+  <tabstop>SBtreshold</tabstop>
+  <tabstop>LEoccupancy</tabstop>
+  <tabstop>SliderTreshold</tabstop>
+  <tabstop>PBrescaleWF</tabstop>
+  <tabstop>SBupperWF</tabstop>
+  <tabstop>SBlowerWF</tabstop>
+  <tabstop>SBupperSpectrum</tabstop>
+  <tabstop>SBlowerSpectrum</tabstop>
+  <tabstop>PBrescaleSpectrum</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

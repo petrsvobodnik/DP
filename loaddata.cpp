@@ -10,7 +10,7 @@ int sampleSelect;
 
 QStringList freqList, timeList;
 
-QVector<double> dataFreq1;      //
+QVector<double> dataFreq1;
 QVector<double> dataTime1;
 
 QCPColorMap *colorMap1 = NULL, *usage1 = NULL;
@@ -26,7 +26,7 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
 
     ui->LEfilename->setReadOnly(true);
 
-
+    // Spectrum diagram initialization
     ui->graphWidget->addGraph();
     ui->graphWidget->graph(0)->setName("FFT diagram");
     ui->SBlowerSpectrum->setValue(-100);
@@ -39,33 +39,21 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
     ui->graphWidget->axisRect()->setRangeZoom(Qt::Vertical);
 
 
-
+    // Waterfall initialization
     ui->waterfallWidget->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
     ui->waterfallWidget->axisRect()->setRangeDrag(Qt::Vertical);
     ui->waterfallWidget->axisRect()->setRangeZoom(Qt::Vertical);
     colorMap1 = new QCPColorMap(ui->waterfallWidget->xAxis, ui->waterfallWidget->yAxis);
     colorMap1->data()->setSize(noOfCol, noOfRow);
-    ui->waterfallWidget->yAxis->setRangeReversed(true);
-
-//    QCPColorScale *colorScale = new QCPColorScale(ui->waterfallWidget);
-//    ui->waterfallWidget->plotLayout()->addElement(0, 1, colorScale);
-//    colorScale->setType(QCPAxis::atRight);
-//    colorScale->setGradient(QCPColorGradient::gpSpectrum);
-//    colorScale->setDataRange(QCPRange(-100, 0));
-//    colorMap1->setColorScale(colorScale);
+    ui->waterfallWidget->yAxis->setRangeReversed(true);     // oldest values are at top if WF
     ui->waterfallWidget->xAxis->setLabel("Frequency [kHz]");
 
-
-    // time is used as ticks on Y axis
+    // time is used as ticks on Y axis in WF
     QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
     dateTicker->setDateTimeFormat("hh:mm:ss");
     ui->waterfallWidget->yAxis->setTicker(dateTicker);
 
-    // Align y axis and colorscale with both top and bottom
-//    QCPMarginGroup *marginGroup = new QCPMarginGroup(ui->waterfallWidget);
-//    ui->waterfallWidget->axisRect()->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
-//    colorScale->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
-
+    // time display line initialization
     timeLine = new QCPItemLine(ui->waterfallWidget);
     timeLine->setPen(QPen(Qt::red));
     timeLine->setVisible(false);
@@ -88,10 +76,10 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
     ui->bandUsage->replot();
 
 
+    // threshold line initialization
     tresholdLine1 = new QCPItemLine(ui->graphWidget);
     tresholdLine1->setVisible(false);
     tresholdLine1->setPen(QPen(Qt::red));
-
 
     ui->SBtreshold->setValue(-30);
     ui->SliderTreshold->setValue(ui->SBtreshold->value());
@@ -105,6 +93,7 @@ LoadData::LoadData(QWidget *parent) :       // GUI constructor
     connect(ui->graphWidget->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(spectrumRangeChanged(QCPRange)));
     connect(colorMap1, SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(WFupdateSBRange(QCPRange)));
 
+    this->setFixedSize(1050, 620);
 }
 
 LoadData::~LoadData()
@@ -119,7 +108,7 @@ void LoadData::on_PBopenFile_clicked()
 
 
 
-    filename1 = QFileDialog::getOpenFileName(this, "Select file with data", "/home/golem/Downloads", "CSV file (*.csv)");   //QDir::homePath()
+    filename1 = QFileDialog::getOpenFileName(this, "Select file with data", QDir::homePath(), "CSV file (*.csv)");
     ui->LEfilename->setText(filename1);
 
     QFile file(filename1);
@@ -172,8 +161,6 @@ void LoadData::on_PBopenFile_clicked()
             freqList.append(frequenz);
             break;
 
-//        case 5:
-//            break;
 
         default:        // saves times of measurement in 'rowCount1' iterations
             timeList.append(frequenz.at(0));
@@ -290,7 +277,6 @@ void LoadData::PBplotData_clicked()
 
     double WFupper = -20;
     colorMap1->setDataRange(QCPRange(-100, WFupper));
-
     ui->SBupperWF->setValue(WFupper);
 
     ui->waterfallWidget->rescaleAxes();
@@ -334,7 +320,7 @@ void LoadData::plotSpectrum(int idx){
 
 void LoadData::plotOccupancy(){
     // comparison of treshold (in UI) with a single sweep (selected by SliderTime). If measured value croses the treshold, 1 is assigned to the plot and vice versa
-    // in the end BW occupancy is calculated and printed into UI
+    // in the end, BW occupancy is calculated and printed into UI
     int busy = 0;
 
     for (int i=0; i<noOfCol-2; i++){
@@ -346,8 +332,8 @@ void LoadData::plotOccupancy(){
             usage1->data()->setCell(i, 2, 0);
     }
 
-    tresholdLine1->start->setCoords(colorMap1->data()->keyRange().lower, ui->SBtreshold->value());      // dataFreq1.first().toDouble()
-    tresholdLine1->end->setCoords(colorMap1->data()->keyRange().upper, ui->SBtreshold->value());      // dataFreq1.last().toDouble()
+    tresholdLine1->start->setCoords(colorMap1->data()->keyRange().lower, ui->SBtreshold->value());
+    tresholdLine1->end->setCoords(colorMap1->data()->keyRange().upper, ui->SBtreshold->value());
 
     ui->LEoccupancy->setText(QString::number(double (100*busy)/noOfCol, 'f', 1));
     ui->bandUsage->replot();
@@ -397,13 +383,6 @@ void LoadData::spectrumRangeChanged(QCPRange newRange){
 }
 
 
-void LoadData::on_PBrescaleSpectrum_clicked()
-{
-    ui->graphWidget->rescaleAxes();
-    if(ui->graphWidget->yAxis->range().upper< -60)
-        ui->graphWidget->yAxis->setRangeUpper(-60);
-    ui->graphWidget->replot();
-}
 
 void LoadData::on_SBupperWF_valueChanged(int arg1)
 {
@@ -420,6 +399,13 @@ void LoadData::WFupdateSBRange(QCPRange newRange){
     ui->SBupperWF->setValue(int(newRange.upper));
 }
 
+void LoadData::on_PBrescaleSpectrum_clicked()
+{
+    ui->graphWidget->rescaleAxes();
+    if(ui->graphWidget->yAxis->range().upper< -60)
+        ui->graphWidget->yAxis->setRangeUpper(-60);
+    ui->graphWidget->replot();
+}
 
 void LoadData::on_PBrescaleWF_clicked()
 {

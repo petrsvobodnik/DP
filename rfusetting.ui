@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>890</width>
-    <height>455</height>
+    <width>900</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="font">
@@ -192,7 +192,7 @@
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>30</y>
+       <y>50</y>
        <width>66</width>
        <height>23</height>
       </rect>
@@ -211,7 +211,7 @@
      <property name="geometry">
       <rect>
        <x>170</x>
-       <y>30</y>
+       <y>50</y>
        <width>80</width>
        <height>21</height>
       </rect>
@@ -250,13 +250,13 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>30</y>
+       <y>50</y>
        <width>91</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>Current angle</string>
+      <string>Set angle</string>
      </property>
     </widget>
     <widget class="QPushButton" name="PBrotRIGHT">
@@ -322,6 +322,32 @@
       <string>Rotator in move</string>
      </property>
     </widget>
+    <widget class="QLabel" name="label_14">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>25</y>
+       <width>91</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Actual angle</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="LEactualAngle">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>25</y>
+       <width>61</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
    <widget class="QPushButton" name="PBdisconnectAR">
     <property name="geometry">
@@ -342,7 +368,7 @@
     <rect>
      <x>310</x>
      <y>40</y>
-     <width>571</width>
+     <width>581</width>
      <height>371</height>
     </rect>
    </property>
@@ -388,10 +414,10 @@
    <widget class="QGroupBox" name="GBparameters">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>10</x>
       <y>50</y>
-      <width>571</width>
-      <height>321</height>
+      <width>561</width>
+      <height>311</height>
      </rect>
     </property>
     <property name="title">
@@ -797,12 +823,12 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>111</width>
+        <width>121</width>
         <height>20</height>
        </rect>
       </property>
       <property name="text">
-       <string>ANT 1 - HE040</string>
+       <string>ANT 1 - HE010E</string>
       </property>
       <attribute name="buttonGroup">
        <string notr="true">RBgroupANT</string>
@@ -982,8 +1008,8 @@ HL223 is loaded</string>
  </connections>
  <buttongroups>
   <buttongroup name="RBgroupLEVEL"/>
-  <buttongroup name="RBgroupFILT"/>
-  <buttongroup name="RBgroupPOLARISATION"/>
   <buttongroup name="RBgroupANT"/>
+  <buttongroup name="RBgroupPOLARISATION"/>
+  <buttongroup name="RBgroupFILT"/>
  </buttongroups>
 </ui>

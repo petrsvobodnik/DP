@@ -151,7 +151,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->labelSavedSamples->hide();
     ui->LEfinishSave->setDisabled(true);
-    this->setMinimumSize(900, 700);
+
 
     defineWindow(fftFiltr,ui->CBwinShape->currentIndex());
 
@@ -161,6 +161,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&guiRefresh, SIGNAL(timeout()),this, SLOT(setLEgainRFU()));
     connect(ui->fftGraph->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(changePlotRange(QCPRange)));
     connect(ui->waterfall->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(changePlotRange(QCPRange)));
+
+
+    this->setFixedSize(900, 650);
 }
 
 // GUI destructor
@@ -476,7 +479,7 @@ void MainWindow::saveMeasuredData(double FFTdata[]){        // saving data itsel
 
 void MainWindow::on_PBchooseDir_clicked()
 {
-    ui->LEfileName->setText(QFileDialog::getExistingDirectory(this, "Choose directory", "/home/golem/Downloads"));
+    ui->LEfileName->setText(QFileDialog::getExistingDirectory(this, "Choose directory", QDir::homePath())); // "/home/golem/Downloads"));
 }
 
 void MainWindow::on_PBassignFileName_clicked()
@@ -555,6 +558,7 @@ void MainWindow::on_PBsaveStop_clicked()
         ui->PBchooseDir->setDisabled(false);
         ui->checkBoxFinishSave->setChecked(false);
         ui->labelSaving->hide();
+        ui->LEfileName->setReadOnly(false);
 
         QFile fileInput(saveFileName);
         fileInput.close();
@@ -568,6 +572,7 @@ void MainWindow::on_PBsaveStop_clicked()
 
 void MainWindow::on_LEfileName_textChanged(const QString &arg1)    // checking whether file from path exists
 {
+    saveFileName = arg1;
     QFile fileInput(arg1);    
     if (fileInput.exists())
         ui->labelFileExists->show();

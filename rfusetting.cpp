@@ -55,7 +55,6 @@ RFUsetting::RFUsetting(QWidget *parent) :
     connect(ui->LEantGain, SIGNAL(textChanged(QString)), this, SLOT(computeGain()));
     connect(ui->LEfiltGain, SIGNAL(textChanged(QString)), this, SLOT(computeGain()));
 
-    ui->SBazimuth->setValue(0);
 
     ui->LEfiltGain->setReadOnly(true);
     ui->LEtotalGain->setAlignment(Qt::AlignCenter);
@@ -85,6 +84,7 @@ RFUsetting::RFUsetting(QWidget *parent) :
     ui->CBserialPortAU->addItems(listOfPorts);
 
     connect(&readPositionTimer, SIGNAL(timeout()), this, SLOT(getRotatorState()));
+    this->setFixedSize(900, 450);
 }
 
 RFUsetting::~RFUsetting()
@@ -406,6 +406,7 @@ void RFUsetting::ARreadAngle(){
    QString text = portAR->readAll();
    qDebug() << text;
 //   ui->SBazimuth->setValue(int(text.toInt()/1023*360));
+   ui->LEactualAngle->setText(text);
 
    disconnect(portAR, SIGNAL(readyRead()), this, SLOT(ARreadAngle()));
 }

@@ -19,8 +19,9 @@ zeroSpan::zeroSpan(QWidget *parent) :
     ui->graphWidget->graph(0)->setName("Single frequency plot");
     ui->graphWidget->yAxis->setRange(-100, -20);
     ui->graphWidget->yAxis->setLabel("Power [dBm]");
+    ui->graphWidget->xAxis->setLabel("Time [hh:mm:ss]");
 
-    ui->graphWidget->setInteractions(QCP::iRangeZoom | QCP::iSelectPlottables| QCP::iRangeDrag);
+    ui->graphWidget->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
     ui->graphWidget->axisRect()->setRangeDrag(Qt::Horizontal);
     ui->graphWidget->axisRect()->setRangeZoom(Qt::Horizontal);
 
@@ -28,13 +29,15 @@ zeroSpan::zeroSpan(QWidget *parent) :
     dateTicker->setDateTimeFormat("hh:mm:ss");
     ui->graphWidget->xAxis->setTicker(dateTicker);
     ui->graphWidget->yAxis->setRange(-100, -20);
-    ui->SBlowerRange->setValue(ui->graphWidget->yAxis->range().lower);
+        ui->SBlowerRange->setValue(ui->graphWidget->yAxis->range().lower);
     ui->SBupperRange->setValue(ui->graphWidget->yAxis->range().upper);
     ui->LEfreq->setReadOnly(true);
 
     ui->SBnoOfSamples->setDisabled(true);
     ui->PBplot->setDisabled(true);
     ui->SliderSelectFreq->setDisabled(true);
+
+    this->setFixedSize(800, 615);
 }
 
 zeroSpan::~zeroSpan()

@@ -52,6 +52,8 @@ freqSetting::freqSetting(QWidget *parent) :
     ui->LNAslider->setValue(hackConfig.LNAgain/8);
     ui->VGAslider->setValue(hackConfig.VGAgain/2);
     ui->CheckBantPow->setChecked(hackConfig.antPower);
+
+    this->setFixedSize(400, 300);
 }
 
 freqSetting::~freqSetting()
